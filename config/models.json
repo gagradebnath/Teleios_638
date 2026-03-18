@@ -3,7 +3,7 @@
   "providers": {
     "ollama": {
       "base_url": "http://localhost:11434",
-      "model": "llama3",
+      "model": "qwen2.5-coder:3b",
       "embed_model": "nomic-embed-text"
     },
     "vllm": {
