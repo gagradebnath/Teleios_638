@@ -18,6 +18,10 @@ class ToolDefinition(BaseModel):
     output_schema: dict
     permissions: list[str]
 
+    def __int__(self,):
+        
+
+
 
 class BaseTool(ABC):
     definition: ToolDefinition

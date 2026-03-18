@@ -1,16 +1,11 @@
-import json
-from pathlib import Path
-
-# Pass parts as separate arguments so os.path handles the slash
-path = Path("..")/"config"/"tools.json"
-print(path)
 
 try:
     # Adding encoding='utf-8' is a best practice for JSON
     with open(path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     
-    print(data['tools'][0]['name'])
+    print(json.dumps(data, indent=4))
+    print(type(data))
 
 except FileNotFoundError:
     print(f"Error: The file at {path} was not found.")
