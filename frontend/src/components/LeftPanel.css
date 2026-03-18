@@ -1,0 +1,99 @@
+/* Left Panel */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #fafafa;
+}
+
+.left-panel-header {
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: 2px solid #5568d3;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.left-panel-header h2 {
+    margin: 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.doc-name {
+    display: block;
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: normal;
+    margin-top: 4px;
+    word-break: break-all;
+}
+
+.left-panel-content {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+}
+
+.no-document {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+    text-align: center;
+    padding: 20px;
+}
+
+.no-document p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.document-list {
+    padding: 12px;
+    background-color: #fff;
+    border-top: 1px solid #e0e0e0;
+    min-height: 80px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.document-list h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.document-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.document-list li {
+    padding: 6px 8px;
+    font-size: 12px;
+    color: #555;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.document-list li:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.document-list li.active {
+    background-color: #667eea;
+    color: white;
+    font-weight: bold;
+}

@@ -1,0 +1,236 @@
+/* Execution Panel */
+.execution-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0;
+    overflow: hidden;
+}
+
+.execution-header {
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.execution-header h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+}
+
+.execution-header p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* Code Editor Area */
+.code-editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background-color: #1e1e1e;
+    overflow: hidden;
+}
+
+.editor-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: #252526;
+    border-bottom: 1px solid #333;
+    overflow-x: auto;
+    align-items: center;
+}
+
+.template-btn {
+    padding: 6px 12px;
+    background-color: #3c3c3c;
+    color: #d5d5d5;
+    border: 1px solid #555;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.template-btn:hover:not(:disabled) {
+    background-color: #464646;
+    border-color: #667eea;
+    color: white;
+}
+
+.template-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.execute-btn {
+    padding: 6px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.execute-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.execute-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Code Editor */
+.code-editor {
+    flex: 1;
+    padding: 12px;
+    background-color: #1e1e1e;
+    color: #d5d5d5;
+    border: none;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    resize: none;
+    overflow: auto;
+}
+
+.code-editor:focus {
+    outline: none;
+    border: 1px solid #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) inset;
+}
+
+.code-editor:disabled {
+    background-color: #252526;
+    opacity: 0.7;
+}
+
+/* Output Section */
+.output-section {
+    padding: 12px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    max-height: 40%;
+    overflow-y: auto;
+}
+
+.output-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.output-success,
+.output-error {
+    background-color: #1e1e1e;
+    color: #d5d5d5;
+    padding: 12px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.output-success {
+    border-left: 4px solid #4caf50;
+}
+
+.output-error {
+    border-left: 4px solid #f44336;
+    color: #ff6b6b;
+}
+
+.output-success pre,
+.output-error pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Execution Info */
+.execution-info {
+    padding: 12px;
+    background-color: #fff3e0;
+    border-top: 1px solid #ffe0b2;
+    font-size: 12px;
+}
+
+.execution-info h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: #e65100;
+    text-transform: uppercase;
+}
+
+.execution-info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.execution-info li {
+    padding: 4px 0;
+    color: #bf360c;
+    line-height: 1.4;
+}
+
+.execution-info li:before {
+    content: "🔒 ";
+    margin-right: 6px;
+}
+
+/* Code editor scrollbar */
+.code-editor::-webkit-scrollbar,
+.output-success::-webkit-scrollbar,
+.output-error::-webkit-scrollbar {
+    width: 8px;
+}
+
+.code-editor::-webkit-scrollbar-track,
+.output-success::-webkit-scrollbar-track,
+.output-error::-webkit-scrollbar-track {
+    background-color: #252526;
+}
+
+.code-editor::-webkit-scrollbar-thumb,
+.output-success::-webkit-scrollbar-thumb,
+.output-error::-webkit-scrollbar-thumb {
+    background-color: #464646;
+    border-radius: 4px;
+}
+
+.code-editor::-webkit-scrollbar-thumb:hover,
+.output-success::-webkit-scrollbar-thumb:hover,
+.output-error::-webkit-scrollbar-thumb:hover {
+    background-color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .editor-toolbar {
+        flex-wrap: wrap;
+    }
+
+    .template-btn {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .code-editor {
+        font-size: 11px;
+    }
+}

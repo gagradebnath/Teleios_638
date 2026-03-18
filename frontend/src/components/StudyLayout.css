@@ -1,0 +1,58 @@
+/* Study Layout: 50/50 Split Grid */
+.study-layout-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    height: 100vh;
+    gap: 0;
+    background-color: #fff;
+}
+
+.layout-left {
+    overflow: hidden;
+    background-color: #fafafa;
+    border-right: 1px solid #e0e0e0;
+}
+
+.layout-right {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.layout-divider {
+    width: 1px;
+    background-color: #e0e0e0;
+    cursor: col-resize;
+    transition: background-color 0.2s;
+}
+
+.layout-divider:hover {
+    background-color: #ccc;
+}
+
+.tab-content {
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+    background-color: #fff;
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 1024px) {
+    .study-layout-container {
+        grid-template-columns: 1fr;
+    }
+
+    .layout-left {
+        display: none;
+    }
+
+    .layout-divider {
+        display: none;
+    }
+
+    .layout-right {
+        height: 100vh;
+    }
+}

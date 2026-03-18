@@ -1,61 +1,153 @@
 version: "3.9"
 
-# SQLite + local Ollama setup.
-# No postgres. No ollama container — uses the Ollama already installed on your machine.
-# ChromaDB still runs in Docker (lightweight, no setup needed).
-#
+# τέλειος Teleios — Docker Compose Configuration
+# 
+# SQLite + local Ollama setup for development
 # Prerequisites:
-#   - Ollama running:  ollama serve
-#   - Pull models:     ollama pull llama3
-#                      ollama pull nomic-embed-text
+#   - Ollama running locally: ollama serve
+#   - Pull models: ollama pull qwen2.5-coder:3b qwen2.5-coder:3b && ollama pull nomic-embed-text
+#
+# To start: docker-compose up -d
+# To stop:  docker-compose down
+# Logs:     docker-compose logs -f
 
 services:
 
   # ── Backend (FastAPI) ──────────────────────────────────────────────────────
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: teleios-backend
     ports:
-      - "8000:8000"
+      - "8005:8005"
     volumes:
-      - ./data:/app/data      # SQLite .db file + uploads persist on host
+      - ./backend:/app          # Live code reload
+      - ./data:/app/data        # SQLite database + uploads persist
+      - ./config:/app/config    # Configuration files
     environment:
-      # Reaches your PC's Ollama from inside the Docker container
+      # Application
+      - API_HOST=0.0.0.0
+      - API_PORT=8005
+      - API_RELOAD=true
+      
+      # Database (SQLite)
+      - DB_URL=sqlite+aiosqlite:///./data/teleios.db
+      - DB_POOL_SIZE=5
+      
+      # Ollama LLM (access host machine from container)
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
-      - CHROMA_HOST=chroma
-      - CHROMA_PORT=8001
+      - OLLAMA_MODEL=qwen2.5-coder:3b
+      - OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+      
+      # Vector Store
+      - VECTOR_STORE_TYPE=chromadb
+      - CHROMADB_HOST=chroma
+      - CHROMADB_PORT=8000
+      
+      # Logging
+      - LOG_LEVEL=info
+      
     depends_on:
       - chroma
     extra_hosts:
-      - "host.docker.internal:host-gateway"   # Linux fix for host resolution
+      - "host.docker.internal:host-gateway"   # Allow container to reach host
+    networks:
+      - teleios-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # ── ChromaDB (vector store) ────────────────────────────────────────────────
+  # ── ChromaDB (Vector Store) ────────────────────────────────────────────────
   chroma:
     image: chromadb/chroma:latest
+    container_name: teleios-chroma
     ports:
-      - "8001:8001"
+      - "8000:8000"
     volumes:
       - chromadata:/chroma/chroma
+    environment:
+      - CHROMA_HOST_PORT=8000
+    networks:
+      - teleios-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
-  # ── Frontend (React) ──────────────────────────────────────────────────────
+  # ── Frontend (React + Vite) ────────────────────────────────────────────────
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: teleios-frontend
     ports:
-      - "3000:3000"
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src          # Live code reload
+      - ./frontend/public:/app/public    # Static assets
+    environment:
+      - VITE_API_URL=http://localhost:8005
+      - VITE_ENABLE_DEBUG=true
     depends_on:
       - backend
+    networks:
+      - teleios-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  teleios-net:
+    driver: bridge
 
 volumes:
   chromadata:
+    driver: local
 
 
-# ── Running WITHOUT Docker (pure local dev) ────────────────────────────────
+# ── Quick Reference ───────────────────────────────────────────────────────────
 #
-#   cd backend && uvicorn main:app --reload
+# Start services:             docker-compose up -d
+# Stop services:              docker-compose down
+# View logs:                  docker-compose logs -f
+# View specific service logs: docker-compose logs -f backend
+# Rebuild images:             docker-compose build
+# Remove all volumes:         docker-compose down -v
 #
-# ChromaDB locally:
-#   pip install chromadb && chroma run --path ./data/chroma
+# Access services:
+#   - Backend API:  http://localhost:8005
+#   - Frontend:     http://localhost:5173
+#   - ChromaDB API: http://localhost:8000
 #
-# Ollama is already on your machine, nothing extra needed.
+# Health checks:
+#   - Backend:   GET http://localhost:8005/health
+#   - ChromaDB:  GET http://localhost:8000/api/v1/heartbeat
+#   - Frontend:  GET http://localhost:5173/
+#
+# ── Development (WITHOUT Docker) ──────────────────────────────────────────────
+#
+# Backend:
+#   cd backend
+#   python -m venv .venv
+#   .venv\Scripts\activate
+#   pip install -r requirements.txt
+#   uvicorn main:app --reload --host 0.0.0.0 --port 8005
+#
+# Frontend (new terminal):
+#   cd frontend
+#   npm install
+#   npm run dev
+#
+# Ollama (separate machine/terminal):
+#   ollama serve
+#   ollama pull qwen2.5-coder:3b nomic-embed-text
+#

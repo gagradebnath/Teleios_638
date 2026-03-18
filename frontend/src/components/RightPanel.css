@@ -1,0 +1,8 @@
+/* Right Panel Container */
+.right-panel-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Individual panel content styling handled by each panel component */
