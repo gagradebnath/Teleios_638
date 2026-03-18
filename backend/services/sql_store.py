@@ -15,10 +15,35 @@ import structlog
 logger = structlog.get_logger()
 
 
-def _to_sqlite(query: str, params: list) -> tuple[str, list]:
-    """Replace $1, $2, ... positional markers with SQLite's ? placeholder."""
-    q = re.sub(r"\$\d+", "?", query)
-    return q, params
+def _normalize_params(query: str, params: list | tuple) -> tuple[str, dict]:
+    """Support $n or ? placeholders by converting to named binds for SQLAlchemy."""
+    if params is None:
+        params = []
+    params = list(params)
+
+    # Handle PostgreSQL-style $1, $2
+    if "$" in query:
+        def repl(match):
+            idx = int(match.group()[1:]) - 1
+            return f":p{idx}"
+        query = re.sub(r"\$\d+", repl, query)
+        bind_params = {f"p{i}": val for i, val in enumerate(params)}
+        return query, bind_params
+
+    # Handle ? placeholders
+    if "?" in query:
+        parts = query.split("?")
+        rebuilt = []
+        bind_params = {}
+        for i, part in enumerate(parts[:-1]):
+            rebuilt.append(part)
+            rebuilt.append(f":p{i}")
+            bind_params[f"p{i}"] = params[i] if i < len(params) else None
+        rebuilt.append(parts[-1])
+        return "".join(rebuilt), bind_params
+
+    # No placeholders
+    return query, {}
 
 
 class SQLStoreService:
@@ -30,7 +55,7 @@ class SQLStoreService:
         Run any parameterized SELECT and return rows as list of dicts.
         Supports both $1 (PostgreSQL-style) and ? (SQLite-style) placeholders.
         """
-        q, p = _to_sqlite(query, params or [])
+        q, p = _normalize_params(query, params or [])
         async with get_async_session() as session:
             result = await session.execute(text(q), p)
             keys   = list(result.keys())
@@ -46,16 +71,16 @@ class SQLStoreService:
             await session.execute(
                 text(
                     "INSERT INTO documents (id, title, doc_type, year, subject, filename) "
-                    "VALUES (?, ?, ?, ?, ?, ?)"
+                    "VALUES (:id, :title, :doc_type, :year, :subject, :filename)"
                 ),
-                [
-                    doc_id,
-                    doc.get("title", "Untitled"),
-                    doc.get("doc_type", "unknown"),
-                    doc.get("year"),
-                    doc.get("subject"),
-                    doc.get("filename", ""),
-                ],
+                {
+                    "id": doc_id,
+                    "title": doc.get("title", "Untitled"),
+                    "doc_type": doc.get("doc_type", "unknown"),
+                    "year": doc.get("year"),
+                    "subject": doc.get("subject"),
+                    "filename": doc.get("filename", ""),
+                },
             )
             await session.commit()
         logger.debug("sql_store.insert_document", doc_id=doc_id)
@@ -74,16 +99,16 @@ class SQLStoreService:
             await session.execute(
                 text(
                     "INSERT INTO blocks (id, doc_id, block_type, page, content, embedding_id) "
-                    "VALUES (?, ?, ?, ?, ?, ?)"
+                    "VALUES (:id, :doc_id, :block_type, :page, :content, :embedding_id)"
                 ),
-                [
-                    block_id,
-                    block["doc_id"],
-                    block.get("block_type", "text"),
-                    block.get("page", 0),
-                    content,
-                    block.get("embedding_id"),
-                ],
+                {
+                    "id": block_id,
+                    "doc_id": block["doc_id"],
+                    "block_type": block.get("block_type", "text"),
+                    "page": block.get("page", 0),
+                    "content": content,
+                    "embedding_id": block.get("embedding_id"),
+                },
             )
             await session.commit()
         return block_id
@@ -97,15 +122,15 @@ class SQLStoreService:
             await session.execute(
                 text(
                     "INSERT INTO questions (id, doc_id, text, topic, year) "
-                    "VALUES (?, ?, ?, ?, ?)"
+                    "VALUES (:id, :doc_id, :text, :topic, :year)"
                 ),
-                [
-                    q_id,
-                    question["doc_id"],
-                    question["text"],
-                    question.get("topic"),
-                    question.get("year"),
-                ],
+                {
+                    "id": q_id,
+                    "doc_id": question["doc_id"],
+                    "text": question["text"],
+                    "topic": question.get("topic"),
+                    "year": question.get("year"),
+                },
             )
             await session.commit()
         return q_id
@@ -114,14 +139,14 @@ class SQLStoreService:
         """Fetch all questions belonging to the given document IDs."""
         if not doc_ids:
             return []
-        placeholders = ", ".join("?" * len(doc_ids))
+        placeholders = ", ".join(f":p{i}" for i in range(len(doc_ids)))
         async with get_async_session() as session:
             result = await session.execute(
                 text(
                     f"SELECT id, doc_id, text, topic, year, prediction_score "
                     f"FROM questions WHERE doc_id IN ({placeholders})"
                 ),
-                doc_ids,
+                {f"p{i}": doc_ids[i] for i in range(len(doc_ids))},
             )
             keys = list(result.keys())
             return [dict(zip(keys, row)) for row in result.fetchall()]
@@ -131,9 +156,9 @@ class SQLStoreService:
         async with get_async_session() as session:
             await session.execute(
                 text(
-                    "UPDATE questions SET prediction_score = ?, "
-                    "last_scored_at = datetime('now') WHERE id = ?"
+                    "UPDATE questions SET prediction_score = :score, "
+                    "last_scored_at = datetime('now') WHERE id = :id"
                 ),
-                [round(score, 6), question_id],
+                {"score": round(score, 6), "id": question_id},
             )
             await session.commit()

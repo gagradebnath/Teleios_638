@@ -36,8 +36,8 @@ class Document(Base):
     filename:    Mapped[str]           = mapped_column(Text,       nullable=False)
     uploaded_at: Mapped[datetime]      = mapped_column(DateTime,   default=datetime.utcnow, nullable=False)
 
-    blocks:    list[Block]    = relationship("Block",    back_populates="document", cascade="all, delete-orphan")
-    questions: list[Question] = relationship("Question", back_populates="document", cascade="all, delete-orphan")
+    blocks:    Mapped[list["Block"]]    = relationship("Block",    back_populates="document", cascade="all, delete-orphan")
+    questions: Mapped[list["Question"]] = relationship("Question", back_populates="document", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Document id={self.id!r} title={self.title!r} type={self.doc_type!r}>"
@@ -62,7 +62,7 @@ class Block(Base):
     embedding_id: Mapped[Optional[str]] = mapped_column(Text,       nullable=True)
     created_at:   Mapped[datetime]      = mapped_column(DateTime,   default=datetime.utcnow, nullable=False)
 
-    document: Document = relationship("Document", back_populates="blocks")
+    document: Mapped["Document"] = relationship("Document", back_populates="blocks")
 
     def __repr__(self) -> str:
         return f"<Block id={self.id!r} type={self.block_type!r} page={self.page}>"
@@ -86,7 +86,7 @@ class Question(Base):
     prediction_score: Mapped[float]          = mapped_column(Float,   nullable=False, default=0.0)
     last_scored_at:   Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
-    document: Document = relationship("Document", back_populates="questions")
+    document: Mapped["Document"] = relationship("Document", back_populates="questions")
 
     def __repr__(self) -> str:
         return f"<Question id={self.id!r} topic={self.topic!r} score={self.prediction_score:.3f}>"
