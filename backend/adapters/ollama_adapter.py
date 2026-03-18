@@ -1,22 +1,7 @@
-"""
-adapters/ollama_adapter.py — Ollama local LLM adapter.
-
-Ollama base URL resolution order (first wins):
-  1. OLLAMA_BASE_URL environment variable   (set by docker-compose for container use)
-  2. config["base_url"]                     (from config/models.json)
-  3. Fallback: http://localhost:11434        (pure local dev)
-
-Since Ollama is already installed on your machine, no Docker container is needed.
-Just make sure `ollama serve` is running, then:
-  ollama pull llama3
-  ollama pull nomic-embed-text
-"""
 from __future__ import annotations
-
 import os
 import httpx
 import structlog
-
 from adapters.model_adapter import ModelAdapter
 
 logger = structlog.get_logger()
@@ -26,16 +11,15 @@ class OllamaAdapter(ModelAdapter):
 
     def __init__(self, config: dict):
         # Env var wins — lets docker-compose point to host.docker.internal
-        # without changing config/models.json
+        # without changing config/models.json. For pure local dev this just
+        # falls through to localhost:11434.
         self.base_url = os.environ.get(
             "OLLAMA_BASE_URL",
             config.get("base_url", "http://localhost:11434"),
         ).rstrip("/")
-
         self.model       = config.get("model", "llama3")
         self.embed_model = config.get("embed_model", "nomic-embed-text")
         self._client     = httpx.AsyncClient(timeout=120.0)
-
         logger.info("ollama_adapter.ready", base_url=self.base_url,
                     model=self.model, embed_model=self.embed_model)
 
