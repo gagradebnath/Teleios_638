@@ -1,0 +1,26 @@
+{
+  "orchestrator": {
+    "max_agent_hops": 5,
+    "default_timeout_seconds": 60
+  },
+  "explanation": {
+    "max_retrieved_blocks": 8,
+    "min_confidence_threshold": 0.5,
+    "always_cite": true
+  },
+  "retrieval": {
+    "top_k": 6,
+    "similarity_threshold": 0.35
+  },
+  "document": {
+    "chunk_size": 512,
+    "chunk_overlap": 64
+  },
+  "prediction": {
+    "top_n": 10,
+    "min_score_threshold": 0.4
+  },
+  "execution": {
+    "timeout_seconds": 10
+  }
+}

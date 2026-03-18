@@ -1,0 +1,11 @@
+{
+  "weights": {
+    "topic_frequency": 0.35,
+    "recency": 0.25,
+    "textbook_importance": 0.25,
+    "similarity": 0.15
+  },
+  "top_n": 10,
+  "min_score_threshold": 0.4,
+  "recency_decay_years": 3
+}
