@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import StudyLayout from './components/StudyLayout';
+import ThemeToggle from './components/ThemeToggle';
 import gateway from './api/gateway';
 import './styles/App.css';
 
@@ -291,6 +292,7 @@ function App() {
 
     return (
         <div className="app-container">
+            <ThemeToggle />
             <StudyLayout
                 // Props for PDF viewer
                 pdfFile={pdfFile}

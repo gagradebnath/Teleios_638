@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Test</title>
+    <style>
+        /* Light Theme */
+        [data-theme="light"] {
+            --text-primary: #1a1a1a;
+            --bg-primary: #ffffff;
+            --border-color: #e0e0e0;
+        }
+
+        /* Dark Theme */
+        [data-theme="dark"] {
+            --text-primary: #e4e4e7;
+            --bg-primary: #18181b;
+            --border-color: #3f3f46;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--text-primary);
+        }
+
+        .box {
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-primary);
+            transition: all 0.3s;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .info {
+            margin: 20px 0;
+            padding: 16px;
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        [data-theme="dark"] code {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌙 Theme Test Page</h1>
+        
+        <div class="info">
+            <strong>Current Theme:</strong> <code id="currentTheme">light</code><br>
+            <strong>Background Color:</strong> <code id="bgColor"></code><br>
+            <strong>Text Color:</strong> <code id="textColor"></code>
+        </div>
+
+        <button onclick="toggleTheme()">Toggle Theme</button>
+
+        <div class="box">
+            <h2>Test Box</h2>
+            <p>This box should change colors when you toggle the theme.</p>
+            <p><strong>Light mode:</strong> White background, dark text</p>
+            <p><strong>Dark mode:</strong> Dark background, light text</p>
+        </div>
+
+        <div class="box">
+            <h3>Verification Steps:</h3>
+            <ol>
+                <li>Click "Toggle Theme" button above</li>
+                <li>Watch colors change smoothly</li>
+                <li>Refresh page - theme should persist</li>
+                <li>Open console (F12) - see theme logs</li>
+            </ol>
+        </div>
+
+        <div class="box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <h3>✨ If this box is visible with good contrast, CSS is working!</h3>
+        </div>
+    </div>
+
+    <script>
+        function updateDisplay() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const bgColor = getComputedStyle(document.body).backgroundColor;
+            const textColor = getComputedStyle(document.body).color;
+            
+            document.getElementById('currentTheme').textContent = theme;
+            document.getElementById('bgColor').textContent = bgColor;
+            document.getElementById('textColor').textContent = textColor;
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            console.log('Toggling theme:', currentTheme, '→', newTheme);
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('test-theme', newTheme);
+            
+            updateDisplay();
+            
+            console.log('✅ Theme applied!');
+            console.log('DOM attribute:', document.documentElement.getAttribute('data-theme'));
+            console.log('localStorage:', localStorage.getItem('test-theme'));
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            // Restore theme from localStorage
+            const savedTheme = localStorage.getItem('test-theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                console.log('Restored theme:', savedTheme);
+            }
+            
+            updateDisplay();
+            console.log('🎨 Theme test page ready!');
+            console.log('Try clicking the "Toggle Theme" button');
+        });
+    </script>
+</body>
+</html>

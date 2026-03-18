@@ -1,9 +1,13 @@
 /**
  * Global CSS variables and base styling
  * Organized for maintainability and scalability
+ * Includes light and dark theme support
  */
 
-:root {
+/* ── Light Theme (Default) ──────────────────────────────────────────── */
+
+:root,
+[data-theme="light"] {
     /* ── Colors ─────────────────────────────────────────────────── */
     --primary-color: #667eea;
     --primary-dark: #764ba2;
@@ -22,6 +26,7 @@
     --bg-primary: #ffffff;
     --bg-secondary: #f9f9f9;
     --bg-tertiary: #f5f5f5;
+    --bg-hover: #f0f0f0;
     --border-color: #e0e0e0;
     --border-light: #e8e8e8;
 
@@ -31,6 +36,59 @@
     --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
     --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.2);
 
+    /* ── PDF Viewer ─────────────────────────────────────────────── */
+    --pdf-bg: #f5f5f5;
+    --pdf-page-bg: #ffffff;
+    --pdf-page-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    /* ── Code Editor ────────────────────────────────────────────── */
+    --code-bg: #282c34;
+    --code-text: #abb2bf;
+}
+
+/* ── Dark Theme ─────────────────────────────────────────────────────── */
+
+[data-theme="dark"] {
+    /* ── Colors (slightly muted in dark mode) ──────────────────── */
+    --primary-color: #7c93ff;
+    --primary-dark: #5b74d6;
+    --primary-light: #99acff;
+    --secondary-color: #ff6b75;
+    --success-color: #66bb6a;
+    --warning-color: #ffa726;
+    --error-color: #ef5350;
+    --info-color: #42a5f5;
+
+    /* ── Neutrals ───────────────────────────────────────────────── */
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #71717a;
+    --text-light: #52525b;
+    --bg-primary: #18181b;
+    --bg-secondary: #27272a;
+    --bg-tertiary: #3f3f46;
+    --bg-hover: #3f3f46;
+    --border-color: #3f3f46;
+    --border-light: #52525b;
+
+    /* ── Shadows (lighter in dark mode) ────────────────────────── */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
+
+    /* ── PDF Viewer ─────────────────────────────────────────────── */
+    --pdf-bg: #27272a;
+    --pdf-page-bg: #3f3f46;
+    --pdf-page-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+
+    /* ── Code Editor ────────────────────────────────────────────── */
+    --code-bg: #1e1e1e;
+    --code-text: #d4d4d4;
+}
+
+/* Common variables (shared between themes) */
+:root {
     /* ── Transitions ────────────────────────────────────────────── */
     --transition-fast: 0.15s ease-out;
     --transition-normal: 0.3s ease-out;
@@ -78,8 +136,11 @@ body,
     padding: 0;
 }
 
+/* ── Theme Transition ───────────────────────────────────────────────── */
+
 html {
     scroll-behavior: smooth;
+    transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 body {
@@ -91,6 +152,7 @@ body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
+    transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 #root {
