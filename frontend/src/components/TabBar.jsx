@@ -1,5 +1,5 @@
 import React from 'react';
-import './TabBar.css';
+import '../styles/components/TabBar.css';
 
 /**
  * TabBar component

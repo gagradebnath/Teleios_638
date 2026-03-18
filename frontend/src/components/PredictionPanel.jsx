@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './PredictionPanel.css';
+import '../styles/components/PredictionPanel.css';
 
 /**
  * PredictionPanel component

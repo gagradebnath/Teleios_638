@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './ChatPanel.css';
+import '../styles/components/ChatPanel.css';
 
 /**
  * ChatPanel component

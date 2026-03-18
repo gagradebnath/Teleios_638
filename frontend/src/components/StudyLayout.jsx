@@ -2,7 +2,7 @@ import React from 'react';
 import LeftPanel from './LeftPanel';
 import RightPanel from './RightPanel';
 import TabBar from './TabBar';
-import './StudyLayout.css';
+import '../styles/components/StudyLayout.css';
 
 /**
  * StudyLayout component

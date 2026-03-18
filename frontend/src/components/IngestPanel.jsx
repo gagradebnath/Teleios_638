@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import './IngestPanel.css';
+import '../styles/components/IngestPanel.css';
 
 /**
  * IngestPanel component

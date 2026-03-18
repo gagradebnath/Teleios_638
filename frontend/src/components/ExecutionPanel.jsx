@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './ExecutionPanel.css';
+import '../styles/components/ExecutionPanel.css';
 
 /**
  * ExecutionPanel component

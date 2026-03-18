@@ -3,7 +3,7 @@ import ChatPanel from './ChatPanel';
 import IngestPanel from './IngestPanel';
 import PredictionPanel from './PredictionPanel';
 import ExecutionPanel from './ExecutionPanel';
-import './RightPanel.css';
+import '../styles/components/RightPanel.css';
 
 /**
  * RightPanel component

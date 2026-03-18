@@ -1,6 +1,6 @@
 import React from 'react';
 import PDFViewer from './PDFViewer';
-import './LeftPanel.css';
+import '../styles/components/LeftPanel.css';
 
 /**
  * LeftPanel component

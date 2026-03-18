@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import StudyLayout from './components/StudyLayout';
 import gateway from './api/gateway';
-import './App.css';
+import './styles/App.css';
 
 /**
  * Main Teleios application component
