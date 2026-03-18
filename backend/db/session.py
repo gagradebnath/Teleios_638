@@ -1,14 +1,6 @@
 """
 db/session.py — SQLite async engine and session factory.
 Uses SQLAlchemy 2.x + aiosqlite driver.
-
-Usage:
-    from db.session import init_db, get_async_session
-
-    await init_db("sqlite+aiosqlite:///./data/teleios.db")
-
-    async with get_async_session() as session:
-        result = await session.execute(text("SELECT 1"))
 """
 from __future__ import annotations
 import os
@@ -26,9 +18,8 @@ import structlog
 
 logger = structlog.get_logger()
 
-# Module-level singletons — set once by init_db()
-_engine:          AsyncEngine | None               = None
-_session_factory: async_sessionmaker | None        = None
+_engine:          AsyncEngine | None        = None
+_session_factory: async_sessionmaker | None = None
 
 
 class Base(DeclarativeBase):
@@ -37,28 +28,20 @@ class Base(DeclarativeBase):
 
 
 async def init_db(db_url: str) -> None:
-    """
-    Initialise the async engine and create all tables.
-    Must be called once during application startup (lifespan).
-
-    Automatically:
-      - normalises sqlite:// → sqlite+aiosqlite://
-      - creates the directory for the .db file if it doesn't exist
-      - runs CREATE TABLE IF NOT EXISTS for all mapped models
-    """
     global _engine, _session_factory
 
     # Normalise driver prefix
     if db_url.startswith("sqlite://") and not db_url.startswith("sqlite+aiosqlite://"):
         db_url = db_url.replace("sqlite://", "sqlite+aiosqlite://", 1)
 
-    # Ensure the data directory exists (e.g. ./data/)
+    # Ensure the data directory exists
     if "///" in db_url:
         db_path = db_url.split("///", 1)[1]
         db_dir  = os.path.dirname(db_path)
         if db_dir:
             os.makedirs(db_dir, exist_ok=True)
 
+    # ✅ Engine is created HERE — this must not be skipped
     _engine = create_async_engine(
         db_url,
         echo=False,
@@ -73,8 +56,8 @@ async def init_db(db_url: str) -> None:
         autocommit=False,
     )
 
-    # Import models here to ensure they are registered with Base.metadata
-    from db import models as _models  # noqa: F401
+    # ✅ Fixed import: db.models.models, not "db import models"
+    from db.models.models import Document, Block, Question  # noqa: F401
 
     async with _engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -84,14 +67,6 @@ async def init_db(db_url: str) -> None:
 
 @asynccontextmanager
 async def get_async_session():
-    """
-    Async context manager that yields a SQLAlchemy AsyncSession.
-
-    Usage:
-        async with get_async_session() as session:
-            await session.execute(...)
-            await session.commit()
-    """
     if _session_factory is None:
         raise RuntimeError(
             "Database not initialised. Call await init_db(url) before using sessions."
@@ -106,7 +81,9 @@ async def get_async_session():
 
 async def close_db() -> None:
     """Dispose the engine — call during application shutdown."""
-    global _engine
+    global _engine, _session_factory
     if _engine is not None:
         await _engine.dispose()
+        _engine = None
+        _session_factory = None  # ✅ Reset so get_async_session raises cleanly after close
         logger.info("db.closed")

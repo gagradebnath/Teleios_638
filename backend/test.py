@@ -43,7 +43,7 @@ def test_insert_document_and_fetch(test_db):
 		store = SQLStoreService()
 		doc_id = await store.insert_document({
 			"title": "Sample Doc",
-			"doc_type": "notes",
+			"doc_type": "unknown",  # ✅ valid: 'textbook' | 'past_paper' | 'unknown'
 			"year": 2024,
 			"subject": "math",
 			"filename": "sample.pdf",
@@ -63,7 +63,8 @@ def test_insert_document_and_fetch(test_db):
 def test_block_and_question_roundtrip(test_db):
 	async def check():
 		store = SQLStoreService()
-		doc_id = await store.insert_document({"title": "Doc", "doc_type": "exam", "filename": "doc.pdf"})
+		# ✅ fixed: "exam" is not a valid doc_type, use "past_paper"
+		doc_id = await store.insert_document({"title": "Doc", "doc_type": "past_paper", "filename": "doc.pdf"})
 
 		block_id = await store.insert_block({
 			"doc_id": doc_id,
