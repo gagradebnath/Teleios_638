@@ -1,26 +1,56 @@
 {
+  "common": {
+    "log_level": "INFO",
+    "enable_caching": false,
+    "cache_ttl_seconds": 3600
+  },
   "orchestrator": {
     "max_agent_hops": 5,
-    "default_timeout_seconds": 60
+    "default_timeout_seconds": 60,
+    "enable_logging": true,
+    "enable_metrics": false,
+    "retry_failed_agents": true
   },
-  "explanation": {
-    "max_retrieved_blocks": 8,
-    "min_confidence_threshold": 0.5,
-    "always_cite": true
+  "document": {
+    "timeout_seconds": 30,
+    "max_retries": 2,
+    "log_level": "INFO"
   },
   "retrieval": {
+    "timeout_seconds": 30,
+    "max_retries": 2,
+    "log_level": "INFO",
     "top_k": 6,
     "similarity_threshold": 0.35
   },
-  "document": {
-    "chunk_size": 512,
-    "chunk_overlap": 64
+  "qa": {
+    "timeout_seconds": 30,
+    "max_retries": 2,
+    "log_level": "INFO"
   },
-  "prediction": {
-    "top_n": 10,
-    "min_score_threshold": 0.4
+  "explanation": {
+    "timeout_seconds": 45,
+    "max_retries": 2,
+    "log_level": "INFO",
+    "max_retrieved_blocks": 8,
+    "min_confidence_threshold": 0.5,
+    "always_cite": true,
+    "citation_format": "mla"
   },
   "execution": {
-    "timeout_seconds": 10
+    "timeout_seconds": 10,
+    "max_retries": 1,
+    "log_level": "INFO",
+    "sandbox_enabled": true,
+    "max_memory_mb": 512,
+    "max_output_size_kb": 1024
+  },
+  "prediction": {
+    "timeout_seconds": 45,
+    "max_retries": 2,
+    "log_level": "INFO",
+    "top_n": 10,
+    "min_score_threshold": 0.4,
+    "use_weights": true
   }
 }

@@ -1,0 +1,55 @@
+{
+  "app": {
+    "name": "τέλειος Teleios",
+    "version": "1.0.0",
+    "title": "Teleios - Multi-Agent AI Study Assistant"
+  },
+  "server": {
+    "port": 5173,
+    "host": "0.0.0.0",
+    "open": false
+  },
+  "api": {
+    "base_url": "http://localhost:8005",
+    "timeout_ms": 30000,
+    "retry_attempts": 3,
+    "retry_delay_ms": 1000
+  },
+  "ui": {
+    "theme": "light",
+    "pdf_viewer": {
+      "scale": 1.5,
+      "page_rendering": "optimized",
+      "text_selection": true
+    },
+    "chat": {
+      "max_history": 50,
+      "message_animation": true
+    },
+    "upload": {
+      "max_file_size_mb": 50,
+      "allowed_types": ["application/pdf"],
+      "drag_drop": true
+    }
+  },
+  "features": {
+    "ocr": true,
+    "equation_detection": true,
+    "figure_extraction": true,
+    "table_extraction": true,
+    "prediction": true,
+    "execution": true,
+    "analytics": false,
+    "debug": false
+  },
+  "logging": {
+    "enabled": true,
+    "level": "info",
+    "console": true
+  },
+  "build": {
+    "source_map": true,
+    "output_dir": "dist",
+    "minify": true
+  }
+}

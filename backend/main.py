@@ -3,19 +3,21 @@ main.py — τέλειος Teleios application entry point.
 
 Lifespan order:
   1. Load all JSON configs
-  2. Initialise SQLite/PostgreSQL via init_db()
-  3. Build VectorStoreService
-  4. Build tool registry (adapter=None for tools that need it)
-  5. Build ModelAdapter from config
-  6. Inject adapter into vector_search + document_retrieval tools
-  7. Build OrchestratorAgent
-  8. Mount gateway router
-  9. Yield (app is live)
- 10. close_db() on shutdown
+  2. Setup CORS middleware
+  3. Initialise SQLite/PostgreSQL via init_db()
+  4. Build VectorStoreService
+  5. Build tool registry (adapter=None for tools that need it)
+  6. Build ModelAdapter from config
+  7. Inject adapter into vector_search + document_retrieval tools
+  8. Build OrchestratorAgent
+  9. Mount gateway router
+  10. Yield (app is live)
+  11. close_db() on shutdown
 """
 from __future__ import annotations
 
 import json
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -39,19 +41,53 @@ def _cfg(name: str) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _get_env_or_config(env_var: str, config_path: dict, default: str = None) -> str:
+    """Get value from environment variable, config dict, or default.
+    
+    Args:
+        env_var: Environment variable name
+        config_path: Config value from JSON
+        default: Default fallback value
+    
+    Returns:
+        Resolved value string
+    """
+    return os.environ.get(env_var, config_path or default)
+
+
 # ── Lifespan ──────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app_cfg    = _cfg("app.json")
-    model_cfg  = _cfg("models.json")
-    agents_cfg = _cfg("agents.json")
-    tools_cfg  = _cfg("tools.json")
-    pred_cfg   = _cfg("prediction.json")
+    # Load all configs
+    app_cfg     = _cfg("app.json")
+    gateway_cfg = _cfg("gateway.json")
+    models_cfg  = _cfg("models.json")
+    agents_cfg  = _cfg("agents.json")
+    tools_cfg   = _cfg("tools.json")
+    pred_cfg    = _cfg("prediction.json")
+    server_cfg  = _cfg("server.json")
 
-    # 1. Database
+    # Store all configs in app state for access in routes
+    app.state.app_config = app_cfg
+    app.state.gateway_config = gateway_cfg
+    app.state.models_config = models_cfg
+    app.state.agents_config = agents_cfg
+    app.state.tools_config = tools_cfg
+    app.state.server_config = server_cfg
+
+    # 1. Database with env override
     from db.session import init_db, close_db
-    db_url = app_cfg.get("storage", {}).get("db_url", "sqlite+aiosqlite:///./data/teleios.db")
+    db_url = _get_env_or_config(
+        app_cfg.get("storage", {}).get("db_url_env", "DB_URL"),
+        None,
+        app_cfg.get("storage", {}).get("db_url", "sqlite+aiosqlite:///./data/teleios.db")
+    )
+    if os.environ.get("DB_URL"):
+        db_url = os.environ.get("DB_URL")
+    else:
+        db_url = app_cfg.get("storage", {}).get("db_url", "sqlite+aiosqlite:///./data/teleios.db")
+    
     await init_db(db_url)
 
     # 2. Vector store
@@ -59,12 +95,12 @@ async def lifespan(app: FastAPI):
     vector_store = VectorStoreService(app_cfg.get("storage", {}))
 
     # 3. Tool registry (adapter slots left as None)
-    from tools.registry import build_tool_registry
-    tools = build_tool_registry(tools_cfg, app_cfg, vector_store)
+    from tools.registry.registry import build_tool_registry
+    tools = build_tool_registry(tools_cfg, app_cfg, vector_store, agents_cfg)
 
     # 4. Model adapter
     from adapters import get_adapter
-    adapter = get_adapter(model_cfg)
+    adapter = get_adapter(models_cfg)
 
     # 5. Inject adapter into tools that need it
     tools["vector_search"].set_adapter(adapter)
@@ -80,6 +116,7 @@ async def lifespan(app: FastAPI):
     orchestrator = Orchestrator(
         tools_registry=tools,
         adapter=adapter,
+        config=agents_cfg,
     )
     app.state.orchestrator = orchestrator
 
@@ -93,26 +130,53 @@ async def lifespan(app: FastAPI):
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
+# Load gateway config
+gateway_cfg = _cfg("gateway.json")
+api_cfg = gateway_cfg.get("api", {})
+server_cfg = gateway_cfg.get("server", {})
+cors_cfg = gateway_cfg.get("cors", {})
+
 app = FastAPI(
-    title="τέλειος Teleios",
-    version="1.0.0",
+    title=api_cfg.get("title", "τέλειος Teleios"),
+    version=api_cfg.get("version", "1.0.0"),
+    description=api_cfg.get("description", "Multi-agent AI system for document analysis"),
     lifespan=lifespan,
 )
 
-app_cfg_for_cors = _cfg("app.json")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=app_cfg_for_cors.get("gateway", {}).get("cors_origins", ["http://localhost:3000"]),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ── Mount CORS Middleware ─────────────────────────────────────────────────────
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+if cors_cfg.get("enabled", True):
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_cfg.get("origins", ["http://localhost:3000", "http://localhost:5173"]),
+        allow_credentials=cors_cfg.get("allow_credentials", True),
+        allow_methods=cors_cfg.get("allow_methods", ["*"]),
+        allow_headers=cors_cfg.get("allow_headers", ["*"]),
+    )
 
-# Import and mount the gateway router
+# ── Mount Logging Middleware ──────────────────────────────────────────────────
+
+from gateway.middleware import LoggingMiddleware
+app.add_middleware(LoggingMiddleware)
+
+# ── Root endpoint ─────────────────────────────────────────────────────────────
+
+@app.get("/")
+async def root():
+    """Root endpoint returns API metadata."""
+    return {
+        "app": api_cfg.get("title", "τέλειος Teleios"),
+        "version": api_cfg.get("version", "1.0.0"),
+        "platform": api_cfg.get("platform", "teleios"),
+        "docs": "/docs",
+        "redoc": "/redoc",
+    }
+
+
+# ── Mount Gateway Router ──────────────────────────────────────────────────────
+
 from gateway.router import router as gateway_router
-app.include_router(gateway_router, prefix="", tags=[])
+app.include_router(gateway_router, prefix="", tags=["teleios"])
 
 
 if __name__ == "__main__":

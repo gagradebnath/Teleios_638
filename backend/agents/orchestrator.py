@@ -1,9 +1,11 @@
 """
 Orchestrator — Multi-agent workflow orchestration.
 Routes requests to appropriate agents, manages tool access, validates outputs.
+Loads timeout and configuration from agents.json for each agent type.
 """
 from __future__ import annotations
 from typing import Any
+import asyncio
 
 import structlog
 from agents.base_agent import BaseAgent
@@ -20,16 +22,21 @@ logger = structlog.get_logger()
 class Orchestrator:
     """Orchestrates multi-agent workflows."""
 
-    def __init__(self, tools_registry: dict[str, Any] | None = None, adapter=None):
+    def __init__(self, 
+                 tools_registry: dict[str, Any] | None = None, 
+                 adapter=None,
+                 config: dict | None = None):
         """
         Initialize the orchestrator.
 
         Args:
             tools_registry — dict of {tool_name: ToolInstance}
             adapter — ModelAdapter instance
+            config — agents.json config dictionary
         """
         self.tools_registry = tools_registry or {}
         self.adapter = adapter
+        self.config = config or {}
 
         # Instantiate all agents
         self.agents: dict[str, BaseAgent] = {
@@ -58,6 +65,23 @@ class Orchestrator:
         for agent in self.agents.values():
             agent.set_tools(tools_registry)
 
+    def _get_agent_config(self, agent_name: str) -> dict:
+        """Get configuration for a specific agent from agents.json."""
+        if not self.config:
+            return {}
+        return self.config.get(agent_name, {})
+
+    def _get_timeout(self, agent_name: str) -> int:
+        """Get timeout for agent, fallback to orchestrator default."""
+        agent_cfg = self._get_agent_config(agent_name)
+        agent_timeout = agent_cfg.get("timeout_seconds")
+        if agent_timeout:
+            return agent_timeout
+        
+        # Fallback to orchestrator default
+        orch_cfg = self.config.get("orchestrator", {})
+        return orch_cfg.get("default_timeout_seconds", 60)
+
     async def run(
         self,
         intent: str,
@@ -81,6 +105,7 @@ class Orchestrator:
                 "explain": "explanation",
                 "execute": "execution",
                 "predict": "prediction",
+                "question": "prediction",  # Alias for predict
             }
 
             agent_name = intent_to_agent.get(intent)
@@ -92,8 +117,23 @@ class Orchestrator:
                 return {"status": "error", "error": f"Agent '{agent_name}' not found"}
 
             logger.info("orchestrator.dispatch", intent=intent, agent=agent_name)
-            result = await agent.run(**payload)
-            return result
+            
+            # Get timeout for this agent
+            timeout = self._get_timeout(agent_name)
+            
+            try:
+                # Run agent with timeout
+                result = await asyncio.wait_for(
+                    agent.run(**payload),
+                    timeout=timeout
+                )
+                return result
+            except asyncio.TimeoutError:
+                logger.error("orchestrator.timeout", agent=agent_name, timeout=timeout)
+                return {
+                    "status": "error",
+                    "error": f"Agent '{agent_name}' exceeded timeout of {timeout}s"
+                }
 
         except Exception as exc:
             logger.error("orchestrator.error", error=str(exc))

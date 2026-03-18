@@ -1,0 +1,39 @@
+{
+  "api": {
+    "title": "τέλειος Teleios",
+    "version": "1.0.0",
+    "platform": "teleios",
+    "description": "Multi-agent AI system for document ingestion, analysis, and prediction"
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8005,
+    "reload": true,
+    "log_level": "INFO"
+  },
+  "cors": {
+    "enabled": true,
+    "origins": ["http://localhost:3000", "http://localhost:5173"],
+    "allow_credentials": true,
+    "allow_methods": ["*"],
+    "allow_headers": ["*"]
+  },
+  "request": {
+    "max_size_mb": 50,
+    "timeout_seconds": 30
+  },
+  "health_check": {
+    "enabled": true,
+    "interval_seconds": 10
+  },
+  "endpoints": {
+    "health": "/health",
+    "ingest": "/ingest",
+    "explain": "/explain",
+    "predict": "/predict",
+    "execute": "/execute",
+    "analyze": "/analyze",
+    "docs": "/docs",
+    "redoc": "/redoc"
+  }
+}

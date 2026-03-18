@@ -1,0 +1,38 @@
+{
+  "deployment": {
+    "environment": "development",
+    "debug": false,
+    "log_level": "INFO"
+  },
+  "api_paths": {
+    "v1": "/api/v1",
+    "base": "/api"
+  },
+  "security": {
+    "cors_enabled": true,
+    "https_only": false,
+    "security_headers": true,
+    "rate_limiting": false
+  },
+  "performance": {
+    "worker_threads": 4,
+    "request_timeout_seconds": 30,
+    "connection_pool_size": 10
+  },
+  "storage": {
+    "path": "./data",
+    "uploads_path": "./data/uploads",
+    "cache_enabled": true,
+    "cache_ttl_seconds": 3600
+  },
+  "services": {
+    "health_check": {
+      "enabled": true,
+      "interval_seconds": 30
+    },
+    "metrics": {
+      "enabled": false,
+      "path": "/metrics"
+    }
+  }
+}

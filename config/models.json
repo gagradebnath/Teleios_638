@@ -1,23 +1,59 @@
 {
   "active_provider": "ollama",
+  "default_timeout_seconds": 120,
   "providers": {
     "ollama": {
       "base_url": "http://localhost:11434",
+      "base_url_env": "OLLAMA_BASE_URL",
       "model": "qwen2.5-coder:3b",
-      "embed_model": "nomic-embed-text"
+      "model_env": "OLLAMA_MODEL",
+      "embed_model": "nomic-embed-text",
+      "embed_model_env": "OLLAMA_EMBEDDING_MODEL",
+      "timeout_seconds": 120,
+      "temperature": 0.7,
+      "top_p": 0.9
     },
     "vllm": {
       "base_url": "http://vllm:8080",
-      "model": "mistralai/Mistral-7B-Instruct-v0.2"
+      "base_url_env": "VLLM_BASE_URL",
+      "model": "mistralai/Mistral-7B-Instruct-v0.2",
+      "timeout_seconds": 120,
+      "temperature": 0.7,
+      "top_p": 0.9
     },
     "openai": {
       "api_key_env": "OPENAI_API_KEY",
+      "api_base": "https://api.openai.com/v1",
+      "api_base_env": "OPENAI_API_BASE",
       "model": "gpt-4o",
-      "embed_model": "text-embedding-3-small"
+      "model_env": "OPENAI_MODEL",
+      "embed_model": "text-embedding-3-small",
+      "embed_model_env": "OPENAI_EMBED_MODEL",
+      "timeout_seconds": 60,
+      "temperature": 0.7,
+      "top_p": 1.0,
+      "max_tokens": 4096
     },
     "anthropic": {
       "api_key_env": "ANTHROPIC_API_KEY",
-      "model": "claude-sonnet-4-20250514"
+      "api_base": "https://api.anthropic.com",
+      "api_base_env": "ANTHROPIC_API_BASE",
+      "model": "claude-sonnet-4-20250514",
+      "model_env": "ANTHROPIC_MODEL",
+      "timeout_seconds": 60,
+      "temperature": 0.7,
+      "max_tokens": 4096
     }
+  },
+  "embedding": {
+    "dimension": 384,
+    "batch_size": 32,
+    "normalize": true
+  },
+  "fallback_chain": ["ollama", "openai"],
+  "monitoring": {
+    "log_requests": true,
+    "log_responses": false,
+    "track_latency": true
   }
 }

@@ -8,13 +8,13 @@ Usage:
 from adapters.model_adapter import ModelAdapter
 from adapters.ollama_adapter import OllamaAdapter
 from adapters.openai_adapter import OpenAIAdapter
-# from adapters.anthropic_adapter import AnthropicAdapter
+from adapters.anthropic_adapter import AnthropicAdapter
 from adapters.vllm_adapter import VLLMAdapter
 
 _REGISTRY = {
     "ollama":    OllamaAdapter,
     "openai":    OpenAIAdapter,
-    # "anthropic": AnthropicAdapter,
+    "anthropic": AnthropicAdapter,
     "vllm":      VLLMAdapter,
 }
 
@@ -25,6 +25,15 @@ def get_adapter(model_cfg: dict) -> ModelAdapter:
 
     To switch provider, change "active_provider" in config/models.json.
     Default: ollama (uses your locally installed Ollama).
+    
+    Args:
+        model_cfg: Parsed config/models.json dictionary
+        
+    Returns:
+        ModelAdapter instance of the appropriate provider class
+        
+    Raises:
+        ValueError: If active_provider is unknown or not in registry
     """
     provider     = model_cfg.get("active_provider", "ollama")
     providers    = model_cfg.get("providers", {})

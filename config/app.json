@@ -3,28 +3,35 @@
   "version": "1.0.0",
   "debug": false,
   "log_level": "INFO",
-  "gateway": {
-    "host": "0.0.0.0",
-    "port": 8000,
-    "cors_origins": ["http://localhost:3000"],
-    "max_request_size_mb": 50
-  },
   "storage": {
     "vector_backend": "chroma",
     "vector_collection": "teleios_docs",
     "chroma_host": "localhost",
     "chroma_port": 8001,
+    "chroma_host_env": "CHROMADB_HOST",
+    "chroma_port_env": "CHROMADB_PORT",
     "db_url": "sqlite+aiosqlite:///./data/teleios.db",
+    "db_url_env": "DB_URL",
     "upload_dir": "./data/uploads"
   },
   "ocr": {
     "engine": "easyocr",
     "equation_detection": true,
     "figure_extraction": true,
-    "table_extraction": true
+    "table_extraction": true,
+    "equation_area_threshold": 40000,
+    "text_extraction_mode": "dict",
+    "image_compression_quality": 90
   },
   "sandbox": {
     "timeout_seconds": 10,
-    "allowed_modules": ["math", "sympy", "numpy", "scipy", "matplotlib"]
+    "allowed_modules": ["math", "sympy", "numpy", "scipy", "matplotlib", "pandas", "sklearn"],
+    "max_memory_mb": 512,
+    "max_output_size_kb": 1024
+  },
+  "limits": {
+    "max_file_size_mb": 50,
+    "max_documents": 1000,
+    "max_chunks_per_doc": 10000
   }
 }

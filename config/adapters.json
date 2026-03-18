@@ -1,0 +1,30 @@
+{
+  "default_timeout_seconds": 120,
+  "retries": {
+    "max_attempts": 3,
+    "backoff_factor": 1.5
+  },
+  "ollama": {
+    "base_url_env": "OLLAMA_BASE_URL",
+    "base_url_default": "http://localhost:11434",
+    "model_env": "OLLAMA_MODEL",
+    "embed_model_env": "OLLAMA_EMBEDDING_MODEL"
+  },
+  "openai": {
+    "api_key_env": "OPENAI_API_KEY",
+    "api_base_env": "OPENAI_API_BASE",
+    "api_base_default": "https://api.openai.com/v1",
+    "timeout_seconds": 60
+  },
+  "anthropic": {
+    "api_key_env": "ANTHROPIC_API_KEY",
+    "api_base_env": "ANTHROPIC_API_BASE",
+    "api_base_default": "https://api.anthropic.com",
+    "timeout_seconds": 60
+  },
+  "vllm": {
+    "base_url_env": "VLLM_BASE_URL",
+    "base_url_default": "http://localhost:8080",
+    "timeout_seconds": 120
+  }
+}

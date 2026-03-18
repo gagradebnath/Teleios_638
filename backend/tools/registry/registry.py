@@ -24,6 +24,7 @@ def build_tool_registry(
     tools_cfg: dict,
     app_cfg: dict,
     vector_store: VectorStoreService,
+    agents_cfg: dict | None = None,
 ) -> dict:
     """
     Build and return the full tool registry.
@@ -32,6 +33,7 @@ def build_tool_registry(
         tools_cfg   — parsed config/tools.json
         app_cfg     — parsed config/app.json
         vector_store — already-initialized VectorStoreService
+        agents_cfg  — parsed config/agents.json (optional, for future use)
 
     Returns:
         dict[str, BaseTool] — keyed by tool name matching tools.json
