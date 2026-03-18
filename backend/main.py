@@ -71,11 +71,10 @@ async def lifespan(app: FastAPI):
     tools["document_retrieval"].set_adapter(adapter)
 
     # 6. Orchestrator
-    from agents.orchestrator import OrchestratorAgent
-    orchestrator = OrchestratorAgent(
+    from agents.orchestrator import Orchestrator
+    orchestrator = Orchestrator(
+        tools_registry=tools,
         adapter=adapter,
-        tools=tools,
-        config={**agents_cfg, "prediction": pred_cfg},
     )
     app.state.orchestrator = orchestrator
 

@@ -8,13 +8,13 @@ Usage:
 from adapters.model_adapter import ModelAdapter
 from adapters.ollama_adapter import OllamaAdapter
 from adapters.openai_adapter import OpenAIAdapter
-from adapters.anthropic_adapter import AnthropicAdapter
+# from adapters.anthropic_adapter import AnthropicAdapter
 from adapters.vllm_adapter import VLLMAdapter
 
 _REGISTRY = {
     "ollama":    OllamaAdapter,
     "openai":    OpenAIAdapter,
-    "anthropic": AnthropicAdapter,
+    # "anthropic": AnthropicAdapter,
     "vllm":      VLLMAdapter,
 }
 

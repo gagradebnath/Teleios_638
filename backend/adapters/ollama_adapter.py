@@ -17,7 +17,7 @@ class OllamaAdapter(ModelAdapter):
             "OLLAMA_BASE_URL",
             config.get("base_url", "http://localhost:11434"),
         ).rstrip("/")
-        self.model       = config.get("model", "llama3")
+        self.model       = config.get("model", "qwen2.5-coder:3b")
         self.embed_model = config.get("embed_model", "nomic-embed-text")
         self._client     = httpx.AsyncClient(timeout=120.0)
         logger.info("ollama_adapter.ready", base_url=self.base_url,
