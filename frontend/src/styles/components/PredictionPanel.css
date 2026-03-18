@@ -91,7 +91,7 @@
 .questions-section h4 {
     margin: 0 0 12px 0;
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .questions-list {
@@ -102,15 +102,15 @@
 
 .question-card {
     padding: 12px;
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     transition: all 0.2s;
 }
 
 .question-card:hover {
-    border-color: #667eea;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px var(--input-focus-shadow);
 }
 
 .question-header {
@@ -123,22 +123,22 @@
 
 .question-num {
     font-weight: 700;
-    color: #667eea;
+    color: var(--primary-color);
     font-size: 13px;
 }
 
 .question-difficulty {
     font-size: 11px;
     font-weight: 600;
-    color: #ff9800;
-    background-color: #fff3e0;
+    color: var(--warning-color);
+    background-color: var(--message-system-bg);
     padding: 2px 6px;
     border-radius: 3px;
 }
 
 .question-text {
     font-size: 13px;
-    color: #333;
+    color: var(--text-primary);
     font-weight: 500;
     margin-bottom: 8px;
     line-height: 1.4;
@@ -147,12 +147,12 @@
 .question-options {
     margin: 8px 0;
     padding-left: 12px;
-    border-left: 2px solid #667eea;
+    border-left: 2px solid var(--primary-color);
 }
 
 .option {
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
     padding: 4px 0;
     line-height: 1.4;
 }
@@ -187,14 +187,14 @@
 /* Analysis Section */
 .analysis-section {
     padding: 16px;
-    background-color: #f9f9f9;
-    border-top: 1px solid #e0e0e0;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
 }
 
 .analysis-section h4 {
     margin: 0 0 12px 0;
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .analysis-groups {
@@ -205,15 +205,15 @@
 
 .analysis-group {
     padding: 12px;
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
 }
 
 .analysis-group h5 {
     margin: 0 0 8px 0;
     font-size: 12px;
-    color: #667eea;
+    color: var(--primary-color);
     text-transform: capitalize;
 }
 
@@ -225,7 +225,7 @@
 
 .stat {
     font-size: 11px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 /* Empty State */
@@ -235,7 +235,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: #999;
+    color: var(--text-tertiary);
     text-align: center;
     padding: 20px;
 }
@@ -251,14 +251,14 @@
 }
 
 .prediction-panel::-webkit-scrollbar-track {
-    background-color: #f5f5f5;
+    background-color: var(--bg-tertiary);
 }
 
 .prediction-panel::-webkit-scrollbar-thumb {
-    background-color: #ddd;
+    background-color: var(--scrollbar-thumb);
     border-radius: 4px;
 }
 
 .prediction-panel::-webkit-scrollbar-thumb:hover {
-    background-color: #bbb;
+    background-color: var(--scrollbar-thumb-hover);
 }

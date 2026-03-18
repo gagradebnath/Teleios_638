@@ -30,11 +30,23 @@
     --border-color: #e0e0e0;
     --border-light: #e8e8e8;
 
+    /* ── Message Backgrounds ────────────────────────────────────── */
+    --message-user-bg: #e3f2fd;
+    --message-system-bg: #fff3e0;
+    --message-error-bg: #ffebee;
+
     /* ── Shadows ────────────────────────────────────────────────── */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
     --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
     --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
     --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.2);
+
+    /* ── Input/Forms ────────────────────────────────────────────── */
+    --input-focus-shadow: rgba(102, 126, 234, 0.1);
+
+    /* ── Scrollbar ──────────────────────────────────────────────── */
+    --scrollbar-thumb: #ddd;
+    --scrollbar-thumb-hover: #bbb;
 
     /* ── PDF Viewer ─────────────────────────────────────────────── */
     --pdf-bg: #f5f5f5;
@@ -71,11 +83,23 @@
     --border-color: #3f3f46;
     --border-light: #52525b;
 
+    /* ── Message Backgrounds ────────────────────────────────────── */
+    --message-user-bg: #1e3a5f;
+    --message-system-bg: #3d2f1f;
+    --message-error-bg: #4a1f1f;
+
     /* ── Shadows (lighter in dark mode) ────────────────────────── */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
     --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
+
+    /* ── Input/Forms ────────────────────────────────────────────── */
+    --input-focus-shadow: rgba(124, 147, 255, 0.2);
+
+    /* ── Scrollbar ──────────────────────────────────────────────── */
+    --scrollbar-thumb: #52525b;
+    --scrollbar-thumb-hover: #71717a;
 
     /* ── PDF Viewer ─────────────────────────────────────────────── */
     --pdf-bg: #27272a;

@@ -4,38 +4,38 @@
     grid-template-columns: 1fr auto 1fr;
     height: 100vh;
     gap: 0;
-    background-color: #fff;
+    background-color: var(--bg-primary);
 }
 
 .layout-left {
     overflow: hidden;
-    background-color: #fafafa;
-    border-right: 1px solid #e0e0e0;
+    background-color: var(--bg-tertiary);
+    border-right: 1px solid var(--border-color);
 }
 
 .layout-right {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-color: #fff;
+    background-color: var(--bg-primary);
 }
 
 .layout-divider {
     width: 1px;
-    background-color: #e0e0e0;
+    background-color: var(--border-color);
     cursor: col-resize;
     transition: background-color 0.2s;
 }
 
 .layout-divider:hover {
-    background-color: #ccc;
+    background-color: var(--border-light);
 }
 
 .tab-content {
     flex: 1;
     overflow: auto;
     padding: 16px;
-    background-color: #fff;
+    background-color: var(--bg-primary);
 }
 
 /* Responsive for smaller screens */

@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: #f5f5f5;
+    background-color: var(--pdf-bg);
 }
 
 .pdf-controls {
@@ -11,8 +11,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    background-color: #fff;
-    border-bottom: 1px solid #e0e0e0;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
     gap: 16px;
 }
 
@@ -26,8 +26,9 @@
 .pdf-nav button,
 .pdf-zoom button {
     padding: 6px 8px;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
@@ -36,9 +37,9 @@
 
 .pdf-nav button:hover:not(:disabled),
 .pdf-zoom button:hover:not(:disabled) {
-    background-color: #667eea;
+    background-color: var(--primary-color);
     color: white;
-    border-color: #667eea;
+    border-color: var(--primary-color);
 }
 
 .pdf-nav button:disabled,
@@ -50,7 +51,7 @@
 .page-info,
 .zoom-level {
     font-size: 12px;
-    color: #555;
+    color: var(--text-secondary);
     min-width: 80px;
     text-align: center;
 }
@@ -61,22 +62,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #e8e8e8;
+    background-color: var(--pdf-bg);
     position: relative;
     user-select: text;
 }
 
 .pdf-canvas {
     display: block;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--pdf-page-shadow);
     cursor: text;
     margin: auto;
+    background-color: var(--pdf-page-bg);
 }
 
 .pdf-loading {
     position: absolute;
     padding: 12px 20px;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
     border-radius: 8px;
     font-size: 14px;
@@ -85,9 +87,9 @@
 
 .pdf-hint {
     padding: 8px 12px;
-    background-color: #fff;
-    border-top: 1px solid #e0e0e0;
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
     font-size: 12px;
-    color: #999;
+    color: var(--text-tertiary);
     text-align: center;
 }
