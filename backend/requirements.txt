@@ -1,0 +1,41 @@
+# ── Web framework ─────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9      # multipart form / file uploads
+
+# ── Database ───────────────────────────────────────────────────────────────────
+sqlalchemy>=2.0.30
+aiosqlite>=0.20.0            # async SQLite driver (only driver needed)
+
+# ── Vector store ──────────────────────────────────────────────────────────────
+chromadb>=0.5.0
+
+# ── AI providers ──────────────────────────────────────────────────────────────
+httpx>=0.27.0                # Ollama + vLLM adapters
+openai>=1.30.0               # optional: OpenAI adapter
+anthropic>=0.28.0            # optional: Anthropic adapter
+
+# ── PDF / OCR ─────────────────────────────────────────────────────────────────
+pymupdf>=1.24.0              # fitz — PDF parsing, layout, image extraction
+# easyocr>=1.7.1             # optional: GPU-accelerated image OCR
+# pytesseract>=0.3.10        # optional: fallback CPU OCR (needs tesseract binary)
+# Pillow>=10.3.0             # required by pytesseract path
+
+# ── Sandboxed execution ────────────────────────────────────────────────────────
+RestrictedPython>=7.1
+
+# ── Science / math (available inside sandbox) ─────────────────────────────────
+numpy>=1.26.0
+sympy>=1.12
+scipy>=1.13.0
+matplotlib>=3.9.0
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+structlog>=24.2.0
+
+# ── Validation ────────────────────────────────────────────────────────────────
+pydantic>=2.7.0
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=9.0.0
+pytest-asyncio>=0.23.0

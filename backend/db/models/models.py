@@ -1,26 +1,27 @@
 """
-db/models.py — SQLAlchemy 2.x ORM models.
+db/models/models.py — SQLAlchemy 2.x ORM models.
 All primary keys are TEXT (UUID strings).
 JSON content stored as TEXT (serialized by the service layer).
-Timestamps stored as TEXT in ISO format (SQLite has no native datetime type).
+Timestamps stored as TEXT in ISO 8601 format (SQLite has no native datetime type).
 """
 from __future__ import annotations
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 
-from sqlalchemy import String, Integer, Float, Text, ForeignKey, DateTime
+from sqlalchemy import String, Integer, Float, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.session import Base
 
-from sqlalchemy import String, Integer, Float, Text, ForeignKey
-
-def _now_iso() -> str:
-    return datetime.utcnow().isoformat()
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
+
+
+def _now_iso() -> str:
+    return datetime.now(UTC).isoformat()
+
 
 # ── Document ──────────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ class Document(Base):
     year:        Mapped[Optional[int]] = mapped_column(Integer,    nullable=True)
     subject:     Mapped[Optional[str]] = mapped_column(Text,       nullable=True)
     filename:    Mapped[str]           = mapped_column(Text,       nullable=False)
-    uploaded_at: Mapped[str] = mapped_column(String, default=_now_iso, nullable=False)
+    uploaded_at: Mapped[str]           = mapped_column(String,     nullable=False, default=_now_iso)
 
     blocks:    Mapped[list["Block"]]    = relationship("Block",    back_populates="document", cascade="all, delete-orphan")
     questions: Mapped[list["Question"]] = relationship("Question", back_populates="document", cascade="all, delete-orphan")
@@ -61,9 +62,9 @@ class Block(Base):
     doc_id:       Mapped[str]           = mapped_column(String,     ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
     block_type:   Mapped[str]           = mapped_column(String(20), nullable=False, default="text")
     page:         Mapped[int]           = mapped_column(Integer,    nullable=False, default=0)
-    content:      Mapped[str]           = mapped_column(Text,       nullable=False)   # JSON
+    content:      Mapped[str]           = mapped_column(Text,       nullable=False)   # JSON string
     embedding_id: Mapped[Optional[str]] = mapped_column(Text,       nullable=True)
-    created_at: Mapped[str] = mapped_column(String, default=_now_iso, nullable=False)
+    created_at:   Mapped[str]           = mapped_column(String,     nullable=False, default=_now_iso)
 
     document: Mapped["Document"] = relationship("Document", back_populates="blocks")
 
@@ -81,14 +82,14 @@ class Question(Base):
     """
     __tablename__ = "questions"
 
-    id:               Mapped[str]            = mapped_column(String,  primary_key=True, default=_new_uuid)
-    doc_id:           Mapped[str]            = mapped_column(String,  ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
-    text:             Mapped[str]            = mapped_column(Text,    nullable=False)
-    topic:            Mapped[Optional[str]]  = mapped_column(Text,    nullable=True)
-    year:             Mapped[Optional[int]]  = mapped_column(Integer, nullable=True)
-    prediction_score: Mapped[float]          = mapped_column(Float,   nullable=False, default=0.0)
-    last_scored_at: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    
+    id:               Mapped[str]           = mapped_column(String,  primary_key=True, default=_new_uuid)
+    doc_id:           Mapped[str]           = mapped_column(String,  ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
+    text:             Mapped[str]           = mapped_column(Text,    nullable=False)
+    topic:            Mapped[Optional[str]] = mapped_column(Text,    nullable=True)
+    year:             Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    prediction_score: Mapped[float]         = mapped_column(Float,   nullable=False, default=0.0)
+    last_scored_at:   Mapped[Optional[str]] = mapped_column(String,  nullable=True)
+
     document: Mapped["Document"] = relationship("Document", back_populates="questions")
 
     def __repr__(self) -> str:

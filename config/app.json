@@ -12,6 +12,8 @@
   "storage": {
     "vector_backend": "chroma",
     "vector_collection": "teleios_docs",
+    "chroma_host": "localhost",
+    "chroma_port": 8001,
     "db_url": "sqlite+aiosqlite:///./data/teleios.db",
     "upload_dir": "./data/uploads"
   },

@@ -1,0 +1,61 @@
+version: "3.9"
+
+# SQLite + local Ollama setup.
+# No postgres. No ollama container — uses the Ollama already installed on your machine.
+# ChromaDB still runs in Docker (lightweight, no setup needed).
+#
+# Prerequisites:
+#   - Ollama running:  ollama serve
+#   - Pull models:     ollama pull llama3
+#                      ollama pull nomic-embed-text
+
+services:
+
+  # ── Backend (FastAPI) ──────────────────────────────────────────────────────
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data      # SQLite .db file + uploads persist on host
+    environment:
+      # Reaches your PC's Ollama from inside the Docker container
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8001
+    depends_on:
+      - chroma
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux fix for host resolution
+    restart: unless-stopped
+
+  # ── ChromaDB (vector store) ────────────────────────────────────────────────
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8001"
+    volumes:
+      - chromadata:/chroma/chroma
+    restart: unless-stopped
+
+  # ── Frontend (React) ──────────────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  chromadata:
+
+
+# ── Running WITHOUT Docker (pure local dev) ────────────────────────────────
+#
+#   cd backend && uvicorn main:app --reload
+#
+# ChromaDB locally:
+#   pip install chromadb && chroma run --path ./data/chroma
+#
+# Ollama is already on your machine, nothing extra needed.

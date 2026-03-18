@@ -1,9 +1,15 @@
 """
 VectorStoreService — ChromaDB vector index abstraction.
 Handles add, search, and delete operations for document embeddings.
-All text blocks from ingested PDFs are stored here for semantic retrieval.
+
+Host resolution order (first wins):
+  1. CHROMA_HOST / CHROMA_PORT environment variables  (set by docker-compose)
+  2. storage_config["chroma_host"] / ["chroma_port"]  (from config/app.json)
+  3. Fallback: localhost:8001                          (pure local dev)
 """
 from __future__ import annotations
+
+import os
 import structlog
 
 logger = structlog.get_logger()
@@ -12,13 +18,18 @@ logger = structlog.get_logger()
 class VectorStoreService:
 
     def __init__(self, storage_config: dict):
-        """
-        storage_config keys used:
-          vector_collection — name of the ChromaDB collection
-          vector_backend    — must be "chroma" (future: "faiss")
-        ChromaDB is expected at http://chroma:8001 (docker service name).
-        """
         self.collection_name = storage_config.get("vector_collection", "teleios_docs")
+
+        # Env vars take priority so docker-compose can override without touching config
+        self._host = os.environ.get(
+            "CHROMA_HOST",
+            storage_config.get("chroma_host", "localhost"),
+        )
+        self._port = int(os.environ.get(
+            "CHROMA_PORT",
+            storage_config.get("chroma_port", 8001),
+        ))
+
         self._collection = None   # lazy-initialised on first use
 
     async def _get_collection(self):
@@ -27,12 +38,15 @@ class VectorStoreService:
             return self._collection
 
         import chromadb
-        client = await chromadb.AsyncHttpClient(host="chroma", port=8001)
+        client = await chromadb.AsyncHttpClient(host=self._host, port=self._port)
         self._collection = await client.get_or_create_collection(
             name=self.collection_name,
             metadata={"hnsw:space": "cosine"},
         )
-        logger.info("vector_store.ready", collection=self.collection_name)
+        logger.info("vector_store.ready",
+                    collection=self.collection_name,
+                    host=self._host,
+                    port=self._port)
         return self._collection
 
     # ── Write ─────────────────────────────────────────────────────────────────
@@ -46,25 +60,15 @@ class VectorStoreService:
         embedding: list[float],
         block_id: str,
     ) -> None:
-        """
-        Upsert a single text block into the collection.
-        block_id is the unique ChromaDB document id.
-        Metadata allows filtering by doc_id at search time.
-        """
         col = await self._get_collection()
         await col.upsert(
             ids=[block_id],
             embeddings=[embedding],
             documents=[text],
-            metadatas=[{
-                "doc_id": doc_id,
-                "title":  title,
-                "page":   page,
-            }],
+            metadatas=[{"doc_id": doc_id, "title": title, "page": page}],
         )
 
     async def delete_by_doc(self, doc_id: str) -> None:
-        """Remove all vectors associated with a document."""
         col = await self._get_collection()
         await col.delete(where={"doc_id": doc_id})
         logger.info("vector_store.deleted", doc_id=doc_id)
@@ -77,14 +81,8 @@ class VectorStoreService:
         top_k: int = 6,
         doc_id: str | None = None,
     ) -> list[dict]:
-        """
-        Semantic search. Optionally filter by doc_id.
-        Returns list of:
-          {id, text, score, doc_id, title, page}
-        Score is cosine similarity (0–1, higher = more similar).
-        """
         col    = await self._get_collection()
-        kwargs = dict(
+        kwargs: dict = dict(
             query_embeddings=[query_embedding],
             n_results=top_k,
             include=["documents", "metadatas", "distances"],
@@ -98,15 +96,14 @@ class VectorStoreService:
             logger.warning("vector_store.search_error", error=str(exc))
             return []
 
-        hits = []
         ids       = result.get("ids",       [[]])[0]
         docs      = result.get("documents", [[]])[0]
         metas     = result.get("metadatas", [[]])[0]
         distances = result.get("distances", [[]])[0]
 
+        hits = []
         for i, block_id in enumerate(ids):
-            meta = metas[i] if i < len(metas) else {}
-            # ChromaDB cosine distance → similarity: score = 1 - distance
+            meta     = metas[i] if i < len(metas) else {}
             distance = distances[i] if i < len(distances) else 1.0
             hits.append({
                 "id":     block_id,
