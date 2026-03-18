@@ -105,14 +105,9 @@ app.add_middleware(
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
-@app.get("/health", tags=["system"])
-async def health():
-    return {"status": "ok", "version": "1.0.0", "platform": "teleios"}
-
-
-# Gateway router is mounted here once gateway/router.py is implemented:
-# from gateway.router import router as gateway_router
-# app.include_router(gateway_router)
+# Import and mount the gateway router
+from gateway.router import router as gateway_router
+app.include_router(gateway_router, prefix="", tags=[])
 
 
 if __name__ == "__main__":
