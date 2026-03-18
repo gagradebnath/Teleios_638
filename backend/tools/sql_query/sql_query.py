@@ -7,28 +7,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from tools.base_tool import BaseTool, ToolDefinition
+from tools.base_tool import BaseTool
 
 _BLOCKED = re.compile(r"\b(DROP|DELETE|TRUNCATE|ALTER)\b", re.IGNORECASE)
 
 
 class SQLQueryTool(BaseTool):
 
-    definition = ToolDefinition(
-        name="sql_query",
-        description="Parameterized SQL query against PostgreSQL",
-        input_schema={
-            "query":  "string",
-            "params": "array",
-        },
-        output_schema={
-            "rows":  "array",
-            "count": "integer",
-        },
-        permissions=["qa_agent", "prediction_agent", "explanation_agent"],
-    )
-
     def __init__(self, sql_store):
+        super().__init__("sql_query")
         self.sql_store = sql_store
 
     async def execute(self, query: str, params: list | None = None) -> dict[str, Any]:

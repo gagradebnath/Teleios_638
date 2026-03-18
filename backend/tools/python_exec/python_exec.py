@@ -5,27 +5,13 @@ Only permitted for execution_agent. All code runs inside RestrictedPython.
 from __future__ import annotations
 from typing import Any
 
-from tools.base_tool import BaseTool, ToolDefinition
+from tools.base_tool import BaseTool
 
 
 class PythonExecTool(BaseTool):
 
-    definition = ToolDefinition(
-        name="python_exec",
-        description="Sandboxed Python execution with math/science libraries (sympy, numpy, scipy, matplotlib)",
-        input_schema={
-            "code":            "string",
-            "timeout_seconds": "integer",
-        },
-        output_schema={
-            "stdout":  "string",
-            "figures": "array<base64_png_string>",
-            "error":   "string | null",
-        },
-        permissions=["execution_agent"],
-    )
-
     def __init__(self, sandbox):
+        super().__init__("python_exec")
         self.sandbox = sandbox
 
     async def execute(self, code: str, timeout_seconds: int = 10) -> dict[str, Any]:

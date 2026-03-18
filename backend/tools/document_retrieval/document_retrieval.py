@@ -9,31 +9,13 @@ Permitted agents: document_agent, retrieval_agent, explanation_agent.
 from __future__ import annotations
 from typing import Any
 
-from tools.base_tool import BaseTool, ToolDefinition
+from tools.base_tool import BaseTool
 
 
 class DocumentRetrievalTool(BaseTool):
 
-    definition = ToolDefinition(
-        name="document_retrieval",
-        description="Retrieve raw or parsed document blocks by ID or page reference, or index new blocks",
-        input_schema={
-            "action":  "string: 'index' | 'fetch'",
-            "doc_id":  "string",
-            "page":    "integer | null",
-            "text":    "string | null",
-            "embedding": "array<float> | null",
-            "title":   "string | null",
-            "block_id": "string | null",
-        },
-        output_schema={
-            "status": "string",
-            "blocks": "array<DocumentBlock> | null",
-        },
-        permissions=["document_agent", "retrieval_agent", "explanation_agent"],
-    )
-
     def __init__(self, vector_store, sql_store, ocr_service=None):
+        super().__init__("document_retrieval")
         self.vector_store = vector_store
         self.sql_store    = sql_store
         self.ocr_service  = ocr_service
@@ -56,18 +38,20 @@ class DocumentRetrievalTool(BaseTool):
         title: str,
         page: int,
         text: str,
-        embedding: list[float],
+        embedding: list[float] | None,
         block_id: str,
         **_,
     ) -> dict[str, Any]:
         try:
+            if embedding is None and self.adapter is not None:
+                embedding = await self.adapter.embed(text)
             # Store in vector index
             await self.vector_store.add(
                 doc_id=doc_id,
                 title=title,
                 page=page,
                 text=text,
-                embedding=embedding,
+                embedding=embedding or [],
                 block_id=block_id,
             )
             return {"status": "indexed", "block_id": block_id}
@@ -82,15 +66,14 @@ class DocumentRetrievalTool(BaseTool):
         **_,
     ) -> dict[str, Any]:
         try:
-            query  = "SELECT * FROM blocks WHERE doc_id = $1"
-            params = [doc_id]
+            query  = "SELECT * FROM blocks WHERE doc_id = :doc_id"
+            params = {"doc_id": doc_id}
             if page is not None:
-                query  += " AND page = $2"
-                params.append(page)
+                query  += " AND page = :page"
+                params["page"] = page
             if block_type:
-                idx     = len(params) + 1
-                query  += f" AND block_type = ${idx}"
-                params.append(block_type)
+                query  += " AND block_type = :block_type"
+                params["block_type"] = block_type
             rows = await self.sql_store.execute_query(query, params)
             return {"blocks": rows}
         except Exception as exc:

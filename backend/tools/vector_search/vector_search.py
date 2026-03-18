@@ -6,24 +6,10 @@ Permitted agents: retrieval_agent, explanation_agent, qa_agent.
 from __future__ import annotations
 from typing import Any
 
-from tools.base_tool import BaseTool, ToolDefinition
+from tools.base_tool import BaseTool
 
 
 class VectorSearchTool(BaseTool):
-
-    definition = ToolDefinition(
-        name="vector_search",
-        description="Semantic similarity search against the indexed document collection",
-        input_schema={
-            "query":  "string",
-            "top_k":  "integer",
-            "doc_id": "string | null",
-        },
-        output_schema={
-            "results": "array<{id, text, score, doc_id, title, page}>",
-        },
-        permissions=["retrieval_agent", "explanation_agent", "qa_agent"],
-    )
 
     def __init__(self, adapter, vector_store):
         """
@@ -31,6 +17,7 @@ class VectorSearchTool(BaseTool):
                        call set_adapter() before first use)
         vector_store — VectorStoreService instance
         """
+        super().__init__("vector_search")
         self.adapter      = adapter
         self.vector_store = vector_store
 

@@ -1,7 +1,13 @@
+-- 001_initial.sql
+-- SQLite-compatible schema for τέλειος_Teleios
+-- Note: This file is kept for reference/documentation.
+-- Tables are auto-created by SQLAlchemy on startup via init_db().
+
 CREATE TABLE IF NOT EXISTS documents (
     id          TEXT PRIMARY KEY,
     title       TEXT NOT NULL,
-    doc_type    TEXT NOT NULL CHECK (doc_type IN ('textbook','past_paper','unknown')),
+    doc_type    TEXT NOT NULL DEFAULT 'unknown'
+                    CHECK (doc_type IN ('textbook', 'past_paper', 'unknown')),
     year        INTEGER,
     subject     TEXT,
     filename    TEXT NOT NULL,
@@ -11,7 +17,8 @@ CREATE TABLE IF NOT EXISTS documents (
 CREATE TABLE IF NOT EXISTS blocks (
     id           TEXT PRIMARY KEY,
     doc_id       TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-    block_type   TEXT NOT NULL CHECK (block_type IN ('text','equation','figure','table')),
+    block_type   TEXT NOT NULL DEFAULT 'text'
+                     CHECK (block_type IN ('text', 'equation', 'figure', 'table')),
     page         INTEGER NOT NULL DEFAULT 0,
     content      TEXT NOT NULL,
     embedding_id TEXT,

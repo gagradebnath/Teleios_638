@@ -11,24 +11,13 @@ from __future__ import annotations
 import datetime
 from typing import Any
 
-from tools.base_tool import BaseTool, ToolDefinition
+from tools.base_tool import BaseTool
 
 
 class StatsAnalysisTool(BaseTool):
 
-    definition = ToolDefinition(
-        name="stats_analysis",
-        description="Compute topic frequency distributions, recency curves, and normalization",
-        input_schema={
-            "operation":   "string: 'frequency' | 'recency' | 'normalize'",
-            "data":        "array",
-            "decay_years": "integer | null",
-        },
-        output_schema={
-            "result": "object",
-        },
-        permissions=["qa_agent", "prediction_agent"],
-    )
+    def __init__(self):
+        super().__init__("stats_analysis")
 
     async def execute(
         self,
