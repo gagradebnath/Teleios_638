@@ -43,16 +43,51 @@ async def ingest(request: Request, file: UploadFile = File(...)):
     pdf_bytes = await file.read()
     if not pdf_bytes:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
-
-    result = await _orch(request).run({
-        "intent":    "ingest",
-        "pdf_bytes": pdf_bytes,
-        "filename":  file.filename or "upload.pdf",
-    })
-
-    if result.get("status") == "failed":
+    
+    filename = file.filename or "upload.pdf"
+    
+    # Extract blocks from PDF using OCRService
+    try:
+        ocr_service = request.app.state.ocr_service
+        blocks = await ocr_service.extract_blocks(pdf_bytes)
+        if not blocks:
+            logger.warning("ingest.no_blocks", filename=filename)
+    except Exception as exc:
+        logger.error("ingest.extraction_error", error=str(exc), filename=filename)
+        raise HTTPException(status_code=500, detail=f"PDF extraction failed: {str(exc)}")
+    
+    # Count block types
+    block_types = {}
+    for block in blocks:
+        btype = block.get("type", "unknown")
+        block_types[btype] = block_types.get(btype, 0) + 1
+    
+    # Extract page count from blocks
+    page_count = 0
+    if blocks:
+        page_count = max((block.get("page", 0) for block in blocks), default=0) + 1
+    
+    # Dispatch to orchestrator with proper parameters
+    result = await _orch(request).run(
+        intent="ingest",
+        action="index",
+        title=filename.replace(".pdf", ""),
+        blocks=blocks,
+    )
+    
+    # Check for errors (both "error" and "failed" status)
+    if result.get("status") in ("error", "failed"):
         raise HTTPException(status_code=500, detail=result.get("error", "Ingestion failed."))
-
+    
+    # Enrich response with metadata
+    result.update({
+        "filename": filename,
+        "pages": page_count,
+        "blocks_extracted": len(blocks),
+        "block_types": block_types,
+        "status": "success" if result.get("status") == "ok" else result.get("status", "failed"),
+    })
+    
     return IngestResponse(**result)
 
 

@@ -70,7 +70,12 @@ async def lifespan(app: FastAPI):
     tools["vector_search"].set_adapter(adapter)
     tools["document_retrieval"].set_adapter(adapter)
 
-    # 6. Orchestrator
+    # 6. OCR Service (for PDF extraction)
+    from services.ocr_service import OCRService
+    ocr_service = OCRService(app_cfg.get("ocr", {}))
+    app.state.ocr_service = ocr_service
+
+    # 7. Orchestrator
     from agents.orchestrator import Orchestrator
     orchestrator = Orchestrator(
         tools_registry=tools,

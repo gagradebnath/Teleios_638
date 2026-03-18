@@ -98,7 +98,13 @@ class DocumentAgent(BaseAgent):
                 indexed_count += 1
 
         logger.info("document_agent.indexed", count=indexed_count)
-        return {"status": "ok", "doc_id": doc_id, "blocks_indexed": indexed_count}
+        final_doc_id = doc_id or doc_id_result.get("block_id", f"doc-{doc_id_result.get('id', 'unknown')}")
+        return {
+            "status": "ok",
+            "doc_id": final_doc_id,
+            "title": title or "Untitled",
+            "blocks_indexed": indexed_count,
+        }
 
     async def _fetch(self, doc_id: str, **_) -> dict[str, Any]:
         """Fetch document blocks by doc_id."""
