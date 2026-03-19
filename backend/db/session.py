@@ -56,8 +56,12 @@ async def init_db(db_url: str) -> None:
         autocommit=False,
     )
 
-    # ✅ Fixed import: db.models.models, not "db import models"
-    from db.models.models import Document, Block, Question  # noqa: F401
+    # ✅ Import all models to ensure tables are created
+    from db.models.models import (  # noqa: F401
+        Course, FileSystemNode, Document, DocumentPage, RawExtraction,
+        Block, Question, KnowledgeBaseItem, KBBlock, QuestionSolutionPair,
+        StudySession, Explanation, ConversationHistory, TopicAnalysis, ProcessingJob
+    )
 
     async with _engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
