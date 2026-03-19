@@ -111,7 +111,22 @@ async def lifespan(app: FastAPI):
     ocr_service = OCRService(app_cfg.get("ocr", {}))
     app.state.ocr_service = ocr_service
 
-    # 7. Orchestrator
+    # 7. SQL Store Service
+    from services.sql_store import SQLStoreService
+    sql_store = SQLStoreService()
+    app.state.sql_store = sql_store
+
+    # 8. File System Service
+    from services.file_system_service import FileSystemService
+    file_system = FileSystemService(sql_store, app_cfg.get("storage", {}).get("upload_dir", "./data/uploads"))
+    app.state.file_system = file_system
+
+    # 9. Course Service
+    from services.course_service import CourseService
+    course_service = CourseService(sql_store)
+    app.state.course_service = course_service
+
+    # 10. Orchestrator
     from agents.orchestrator import Orchestrator
     orchestrator = Orchestrator(
         tools_registry=tools,

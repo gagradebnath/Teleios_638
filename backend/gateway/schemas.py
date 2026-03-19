@@ -128,3 +128,51 @@ class HealthResponse(BaseModel):
     status:   str
     version:  str
     platform: str
+
+
+# ── /courses ──────────────────────────────────────────────────────────────────
+
+class CourseCreate(BaseModel):
+    name: str
+    code: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = "#3b82f6"
+
+
+class CourseResponse(BaseModel):
+    id: str
+    name: str
+    code: Optional[str] = None
+    description: Optional[str] = None
+    color: str = "#3b82f6"
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+class CourseListResponse(BaseModel):
+    courses: list[dict] = Field(default_factory=list)
+
+
+# ── /file-system ──────────────────────────────────────────────────────────────
+
+class FolderCreateRequest(BaseModel):
+    name: str
+    parent_id: Optional[str] = None
+    course_id: Optional[str] = None
+
+
+class FileSystemNodeResponse(BaseModel):
+    id: str
+    name: str
+    node_type: str  # 'file' or 'folder'
+    path: str
+    parent_id: Optional[str] = None
+    course_id: Optional[str] = None
+    size_bytes: Optional[int] = None
+    mime_type: Optional[str] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+class FileSystemListResponse(BaseModel):
+    nodes: list[dict] = Field(default_factory=list)

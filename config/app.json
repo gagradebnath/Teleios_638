@@ -21,7 +21,13 @@
     "table_extraction": true,
     "equation_area_threshold": 40000,
     "text_extraction_mode": "dict",
-    "image_compression_quality": 90
+    "image_compression_quality": 90,
+    "llm_cleaning": {
+      "enabled": true,
+      "model": "qwen2.5-coder:3b",
+      "temperature": 0.3,
+      "max_tokens": 2048
+    }
   },
   "sandbox": {
     "timeout_seconds": 10,

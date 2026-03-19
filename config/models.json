@@ -46,11 +46,11 @@
     }
   },
   "embedding": {
-    "dimension": 384,
+    "dimension": 768,
     "batch_size": 32,
     "normalize": true
   },
-  "fallback_chain": ["ollama", "openai"],
+  "fallback_chain": ["ollama"],
   "monitoring": {
     "log_requests": true,
     "log_responses": false,

@@ -112,10 +112,10 @@ class SQLStoreService:
                 INSERT INTO documents 
                 (id, title, doc_type, year, subject, filename, uploaded_at,
                  course_id, file_system_node_id, processing_status, total_pages, 
-                 file_size_bytes, file_path, metadata)
+                 file_size_bytes, file_path, doc_metadata)
                 VALUES (:id, :title, :doc_type, :year, :subject, :filename, :uploaded_at,
                         :course_id, :file_system_node_id, :processing_status, :total_pages,
-                        :file_size_bytes, :file_path, :metadata)
+                        :file_size_bytes, :file_path, :doc_metadata)
             """), {
                 "id": doc_id,
                 "title": data["title"],
@@ -130,7 +130,7 @@ class SQLStoreService:
                 "total_pages": data.get("total_pages", 0),
                 "file_size_bytes": data.get("file_size_bytes", 0),
                 "file_path": data.get("file_path"),
-                "metadata": json.dumps(data.get("metadata")) if data.get("metadata") else None,
+                "doc_metadata": json.dumps(data.get("doc_metadata")) if data.get("doc_metadata") else None,
             })
             await s.commit()
         return doc_id

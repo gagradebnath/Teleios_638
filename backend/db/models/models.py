@@ -105,7 +105,7 @@ class Document(Base):
     total_pages:         Mapped[int]           = mapped_column(Integer, nullable=False, default=0)
     file_size_bytes:     Mapped[int]           = mapped_column(Integer, nullable=False, default=0)
     file_path:           Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    metadata:            Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
+    doc_metadata:        Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
 
     blocks:              Mapped[list["Block"]]           = relationship("Block", back_populates="document", cascade="all, delete-orphan")
     questions:           Mapped[list["Question"]]        = relationship("Question", back_populates="document", cascade="all, delete-orphan")
