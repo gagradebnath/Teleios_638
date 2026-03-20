@@ -33,11 +33,18 @@ class OCRService:
 
     # ── Public API ────────────────────────────────────────────────────────────
 
-    async def extract_blocks(self, pdf_bytes: bytes) -> list[dict[str, Any]]:
+    async def extract_blocks(self, pdf_bytes: bytes, page_filter: dict = None) -> list[dict[str, Any]]:
         """
         Main entry point. Accepts raw PDF bytes, returns a flat list of blocks.
         Async signature for compatibility with agent code; internally synchronous
         (PyMuPDF is not async-native).
+        
+        Args:
+            pdf_bytes: Raw PDF file bytes
+            page_filter: Optional page filtering:
+                - {"type": "range", "start": 1, "end": 5} - Pages 1-5
+                - {"type": "specific", "pages": [1, 3, 5]} - Specific pages
+                - None - All pages
         """
         import fitz  # PyMuPDF
 
@@ -48,8 +55,22 @@ class OCRService:
             return []
 
         all_blocks: list[dict] = []
+        
+        # Determine which pages to process
+        total_pages = len(doc)
+        if page_filter:
+            if page_filter["type"] == "range":
+                start = page_filter["start"] - 1  # Convert to 0-indexed
+                end = min(page_filter["end"], total_pages)
+                pages_to_process = range(start, end)
+            elif page_filter["type"] == "specific":
+                pages_to_process = [p - 1 for p in page_filter["pages"] if 0 < p <= total_pages]
+            else:
+                pages_to_process = range(total_pages)
+        else:
+            pages_to_process = range(total_pages)
 
-        for page_num in range(len(doc)):
+        for page_num in pages_to_process:
             page = doc[page_num]
             page_idx = page_num + 1   # 1-based page numbers
 
@@ -65,7 +86,7 @@ class OCRService:
                 all_blocks.extend(self._extract_tables(page, page_idx))
 
         doc.close()
-        logger.info("ocr.done", pages=len(doc), blocks=len(all_blocks))
+        logger.info("ocr.done", total_pages=total_pages, processed_pages=len(list(pages_to_process)), blocks=len(all_blocks))
         return all_blocks
 
     # ── Text ──────────────────────────────────────────────────────────────────

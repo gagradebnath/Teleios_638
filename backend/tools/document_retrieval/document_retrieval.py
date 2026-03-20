@@ -40,22 +40,50 @@ class DocumentRetrievalTool(BaseTool):
         text: str,
         embedding: list[float] | None,
         block_id: str,
+        course_id: str | None = None,
+        file_system_node_id: str | None = None,
+        file_path: str | None = None,
+        file_size_bytes: int = 0,
+        total_pages: int = 0,
         **_,
     ) -> dict[str, Any]:
+        """Index a block and optionally create the document."""
         try:
-            if embedding is None and self.adapter is not None:
+            # If this is the first block (page=0, empty text), create the document
+            if page == 0 and not text:
+                # Create document record
+                doc_id = await self.sql_store.insert_document({
+                    "title": title,
+                    "filename": f"{title}.pdf",
+                    "doc_type": "unknown",
+                    "course_id": course_id,
+                    "file_system_node_id": file_system_node_id,
+                    "file_path": file_path,
+                    "file_size_bytes": file_size_bytes,
+                    "total_pages": total_pages,
+                    "processing_status": "processing",
+                })
+                return {"status": "document_created", "block_id": doc_id}
+            
+            # Otherwise, index the block
+            if embedding is None and self.adapter is not None and text:
                 embedding = await self.adapter.embed(text)
+            
             # Store in vector index
-            await self.vector_store.add(
-                doc_id=doc_id,
-                title=title,
-                page=page,
-                text=text,
-                embedding=embedding or [],
-                block_id=block_id,
-            )
+            if text:  # Only store non-empty blocks
+                await self.vector_store.add(
+                    doc_id=doc_id,
+                    title=title,
+                    page=page,
+                    text=text,
+                    embedding=embedding or [],
+                    block_id=block_id,
+                )
+            
             return {"status": "indexed", "block_id": block_id}
         except Exception as exc:
+            import traceback
+            traceback.print_exc()
             return {"error": str(exc), "status": "failed"}
 
     async def _fetch(

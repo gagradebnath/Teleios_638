@@ -64,12 +64,17 @@ class DocumentAgent(BaseAgent):
         title: str | None,
         doc_type: str,
         blocks: list[dict],
+        course_id: str | None = None,
+        file_system_node_id: str | None = None,
+        file_path: str | None = None,
+        file_size_bytes: int = 0,
+        total_pages: int = 0,
         **_,
     ) -> dict[str, Any]:
-        """Index a document and its blocks."""
+        """Index a document and its blocks with enhanced metadata."""
         doc_retrieval_tool = await self.get_tool("document_retrieval")
 
-        # Insert document
+        # Insert document with additional metadata
         doc_id_result = await doc_retrieval_tool.execute(
             action="index",
             doc_id=doc_id,
@@ -77,6 +82,11 @@ class DocumentAgent(BaseAgent):
             page=0,
             text="",
             block_id="",
+            course_id=course_id,
+            file_system_node_id=file_system_node_id,
+            file_path=file_path,
+            file_size_bytes=file_size_bytes,
+            total_pages=total_pages,
         )
 
         if "error" in doc_id_result:
@@ -97,7 +107,7 @@ class DocumentAgent(BaseAgent):
             if "error" not in block_result:
                 indexed_count += 1
 
-        logger.info("document_agent.indexed", count=indexed_count)
+        logger.info("document_agent.indexed", count=indexed_count, course_id=course_id)
         final_doc_id = doc_id or doc_id_result.get("block_id", f"doc-{doc_id_result.get('id', 'unknown')}")
         return {
             "status": "ok",

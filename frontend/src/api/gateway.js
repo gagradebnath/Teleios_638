@@ -59,10 +59,18 @@ export const gateway = {
      * Ingest a PDF document
      * POST /ingest
      * @param {File} file - PDF file to ingest
+     * @param {Object} options - Additional options (course_id, file_system_node_id, page range)
      */
-    async ingestDocument(file) {
+    async ingestDocument(file, options = {}) {
         const formData = new FormData();
         formData.append('file', file);
+        
+        // Add optional parameters
+        if (options.course_id) formData.append('course_id', options.course_id);
+        if (options.file_system_node_id) formData.append('file_system_node_id', options.file_system_node_id);
+        if (options.start_page) formData.append('start_page', options.start_page);
+        if (options.end_page) formData.append('end_page', options.end_page);
+        if (options.specific_pages) formData.append('specific_pages', JSON.stringify(options.specific_pages));
 
         try {
             const response = await client.post('/ingest', formData, {

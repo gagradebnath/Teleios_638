@@ -11,6 +11,9 @@ import '../styles/components/StudyLayout.css';
  * - Right: Interactive panels (Chat, Predict, Execute, Ingest)
  */
 function StudyLayout({
+    // Course context
+    selectedCourse,
+    
     // PDF viewer props
     pdfFile,
     documentName,
@@ -71,6 +74,7 @@ function StudyLayout({
                         onPredict={onPredict}
                         onExecute={onExecute}
                         onAnalyze={onAnalyze}
+                        selectedCourse={selectedCourse}
                     />
                 </div>
             </div>

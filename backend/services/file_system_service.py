@@ -163,12 +163,60 @@ class FileSystemService:
         course_dir.mkdir(parents=True, exist_ok=True)
         return course_dir / file_id
 
-    async def save_file(self, file_bytes: bytes, course_id: str, file_id: str) -> str:
-        """Save a file to disk and return the path."""
+    async def save_file(
+        self, 
+        file_name: str,
+        file_data: bytes, 
+        mime_type: str = "application/octet-stream",
+        node_id: Optional[str] = None,
+        course_id: Optional[str] = None
+    ) -> str:
+        """
+        Save a file to disk and optionally create a file system node.
+        
+        Args:
+            file_name: Name of the file
+            file_data: File bytes
+            mime_type: MIME type of the file
+            node_id: Optional parent folder node ID
+            course_id: Optional course ID (required if node_id not provided)
+            
+        Returns:
+            Physical file path
+        """
+        import uuid
+        
+        # Generate unique file ID
+        file_id = str(uuid.uuid4())
+        
+        # Determine course_id from node if provided
+        if node_id:
+            node = await self.sql.get_file_system_node(node_id)
+            if not node:
+                raise ValueError(f"Parent node not found: {node_id}")
+            course_id = node.get("course_id")
+        
+        if not course_id:
+            raise ValueError("Either node_id or course_id must be provided")
+        
+        # Save physical file
         file_path = self.get_physical_path(course_id, file_id)
-        
         with open(file_path, "wb") as f:
-            f.write(file_bytes)
+            f.write(file_data)
         
-        logger.info("file.saved", path=str(file_path), size=len(file_bytes))
+        # Create file system node if we have a parent or course
+        if node_id or course_id:
+            try:
+                await self.create_file_node(
+                    parent_id=node_id,
+                    course_id=course_id,
+                    name=file_name,
+                    size_bytes=len(file_data),
+                    mime_type=mime_type,
+                    file_id=file_id
+                )
+            except Exception as e:
+                logger.warning("file.node_creation_failed", error=str(e))
+        
+        logger.info("file.saved", path=str(file_path), size=len(file_data))
         return str(file_path)

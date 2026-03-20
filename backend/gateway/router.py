@@ -61,17 +61,50 @@ async def health():
 # ── /ingest ───────────────────────────────────────────────────────────────────
 
 @router.post("/ingest", response_model=IngestResponse, tags=["documents"])
-async def ingest(request: Request, file: UploadFile = File(...)):
+async def ingest(
+    request: Request,
+    file: UploadFile = File(...),
+    course_id: Optional[str] = None,
+    file_system_node_id: Optional[str] = None,
+    start_page: Optional[int] = None,
+    end_page: Optional[int] = None,
+    specific_pages: Optional[str] = None,  # JSON array as string
+):
+    """
+    Ingest a PDF document with optional course assignment, file system location, and page selection.
+    
+    Parameters:
+    - file: PDF file to ingest
+    - course_id: Optional course ID to associate document with
+    - file_system_node_id: Optional file system node (folder) to save document in
+    - start_page: Optional starting page for range ingestion (1-indexed)
+    - end_page: Optional ending page for range ingestion (1-indexed)
+    - specific_pages: Optional JSON array of specific page numbers (e.g., "[1, 3, 5]")
+    """
+    import json
+    
     pdf_bytes = await file.read()
     if not pdf_bytes:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
     
     filename = file.filename or "upload.pdf"
     
+    # Parse page selection
+    page_filter = None
+    if specific_pages:
+        try:
+            page_filter = {"type": "specific", "pages": json.loads(specific_pages)}
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid specific_pages format. Must be valid JSON array.")
+    elif start_page is not None and end_page is not None:
+        if start_page < 1 or end_page < start_page:
+            raise HTTPException(status_code=400, detail="Invalid page range. start_page must be >= 1 and <= end_page.")
+        page_filter = {"type": "range", "start": start_page, "end": end_page}
+    
     # Extract blocks from PDF using OCRService
     try:
         ocr_service = request.app.state.ocr_service
-        blocks = await ocr_service.extract_blocks(pdf_bytes)
+        blocks = await ocr_service.extract_blocks(pdf_bytes, page_filter=page_filter)
         if not blocks:
             logger.warning("ingest.no_blocks", filename=filename)
     except Exception as exc:
@@ -89,12 +122,43 @@ async def ingest(request: Request, file: UploadFile = File(...)):
     if blocks:
         page_count = max((block.get("page", 0) for block in blocks), default=0) + 1
     
+    # Save file to file system if node provided
+    file_path = None
+    if course_id and file_system_node_id:
+        try:
+            fs_service = _fs(request)
+            file_path = await fs_service.save_file(
+                node_id=file_system_node_id,
+                file_name=filename,
+                file_data=pdf_bytes,
+                mime_type="application/pdf"
+            )
+        except Exception as exc:
+            logger.warning("ingest.file_save_error", error=str(exc))
+    elif course_id:
+        # Save to course root if no specific node
+        try:
+            fs_service = _fs(request)
+            file_path = await fs_service.save_file(
+                course_id=course_id,
+                file_name=filename,
+                file_data=pdf_bytes,
+                mime_type="application/pdf"
+            )
+        except Exception as exc:
+            logger.warning("ingest.file_save_error", error=str(exc))
+    
     # Dispatch to orchestrator with proper parameters
     result = await _orch(request).run(
         intent="ingest",
         action="index",
         title=filename.replace(".pdf", ""),
         blocks=blocks,
+        course_id=course_id,
+        file_system_node_id=file_system_node_id,
+        file_path=file_path,
+        file_size_bytes=len(pdf_bytes),
+        total_pages=page_count,
     )
     
     # Check for errors (both "error" and "failed" status)
@@ -108,6 +172,8 @@ async def ingest(request: Request, file: UploadFile = File(...)):
         "blocks_extracted": len(blocks),
         "block_types": block_types,
         "status": "success" if result.get("status") == "ok" else result.get("status", "failed"),
+        "course_id": course_id,
+        "file_system_node_id": file_system_node_id,
     })
     
     return IngestResponse(**result)

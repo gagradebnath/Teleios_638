@@ -246,7 +246,7 @@ class KnowledgeBaseItem(Base):
     total_pages:       Mapped[int]           = mapped_column(Integer, nullable=False, default=0)
     processing_status: Mapped[str]           = mapped_column(String(20), nullable=False, default="pending")
     paired_with_id:    Mapped[Optional[str]] = mapped_column(String, ForeignKey("knowledge_base_items.id", ondelete="SET NULL"), nullable=True)
-    metadata:          Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
+    kb_metadata:       Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
     uploaded_at:       Mapped[str]           = mapped_column(String, nullable=False, default=_now_iso)
     processed_at:      Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
@@ -273,7 +273,7 @@ class KBBlock(Base):
     question_number:  Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     topic:            Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     embedding_id:     Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    metadata:         Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
+    kb_block_metadata:Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
     created_at:       Mapped[str]           = mapped_column(String, nullable=False, default=_now_iso)
 
     kb_item: Mapped["KnowledgeBaseItem"] = relationship("KnowledgeBaseItem", back_populates="blocks")
@@ -328,7 +328,7 @@ class StudySession(Base):
     duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     pages_viewed:     Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON array
     topics_covered:   Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON array
-    metadata:         Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
+    session_metadata: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
 
     course:       Mapped[Optional["Course"]]   = relationship("Course", back_populates="study_sessions")
     document:     Mapped[Optional["Document"]] = relationship("Document", back_populates="study_sessions")
@@ -377,7 +377,7 @@ class ConversationHistory(Base):
     content:     Mapped[str]           = mapped_column(Text, nullable=False)
     doc_context: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
     timestamp:   Mapped[str]           = mapped_column(String, nullable=False, default=_now_iso)
-    metadata:    Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
+    conv_metadata: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
 
     session: Mapped[Optional["StudySession"]] = relationship("StudySession", back_populates="conversations")
 
@@ -399,7 +399,7 @@ class TopicAnalysis(Base):
     kb_coverage:      Mapped[float]         = mapped_column(Float, nullable=False, default=0.0)
     importance_score: Mapped[float]         = mapped_column(Float, nullable=False, default=0.0)
     last_seen_year:   Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    metadata:         Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
+    topic_metadata:   Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
     updated_at:       Mapped[str]           = mapped_column(String, nullable=False, default=_now_iso)
 
     course: Mapped[Optional["Course"]] = relationship("Course", back_populates="topics")
@@ -423,7 +423,7 @@ class ProcessingJob(Base):
     started_at:    Mapped[Optional[str]] = mapped_column(String, nullable=True)
     completed_at:  Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at:    Mapped[str]           = mapped_column(String, nullable=False, default=_now_iso)
-    metadata:      Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
+    job_metadata:  Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
 
     def __repr__(self) -> str:
         return f"<ProcessingJob id={self.id!r} type={self.job_type!r} status={self.status!r}>"

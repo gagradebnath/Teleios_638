@@ -1,14 +1,20 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import StudyLayout from './components/StudyLayout';
 import ThemeToggle from './components/ThemeToggle';
+import CourseSelector from './components/CourseSelector';
 import gateway from './api/gateway';
 import './styles/App.css';
 
 /**
  * Main Teleios application component
  * Manages global state and coordinates data flow between panels
+ * Enhanced with course management and file system integration
  */
 function App() {
+    // Course state
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [showCourseSelector, setShowCourseSelector] = useState(true);
+
     // PDF and document state
     const [activePdf, setActivePdf] = useState(null);
     const [pdfFile, setPdfFile] = useState(null);
@@ -34,32 +40,77 @@ function App() {
     const [activePanel, setActivePanel] = useState('chat');
 
     /**
+     * Load documents for selected course
+     */
+    useEffect(() => {
+        if (selectedCourse) {
+            loadCourseDocuments();
+        }
+    }, [selectedCourse]);
+
+    const loadCourseDocuments = async () => {
+        if (!selectedCourse) return;
+        
+        try {
+            const docs = await gateway.listDocuments(selectedCourse.id);
+            setDocuments(docs);
+        } catch (error) {
+            console.error('Error loading documents:', error);
+        }
+    };
+
+    /**
+     * Handle course selection
+     */
+    const handleCourseSelected = useCallback((course) => {
+        setSelectedCourse(course);
+        setShowCourseSelector(false);
+        setChatHistory((prev) => [
+            ...prev,
+            {
+                role: 'system',
+                content: `Course "${course.name}" selected. You can now upload and study documents for this course.`,
+                timestamp: new Date().toISOString(),
+            },
+        ]);
+    }, []);
+
+    /**
      * Handle PDF file selection and ingestion
      */
-    const handleFileSelected = useCallback(async (file) => {
+    const handleFileSelected = useCallback(async (file, fileSystemNodeId = null) => {
+        if (!selectedCourse) {
+            setChatHistory((prev) => [
+                ...prev,
+                {
+                    role: 'error',
+                    content: 'Please select a course first.',
+                    timestamp: new Date().toISOString(),
+                },
+            ]);
+            return;
+        }
+
         setPdfFile(file);
         setActivePdf(file.name);
         setIsLoading(true);
 
         try {
-            const result = await gateway.ingestDocument(file);
+            const result = await gateway.ingestDocument(file, {
+                course_id: selectedCourse.id,
+                file_system_node_id: fileSystemNodeId,
+            });
+            
             if (result.success) {
                 const docId = result.data.doc_id || 'doc_' + Date.now();
                 setDocumentId(docId);
-                setDocuments((prev) => [
-                    ...prev,
-                    {
-                        id: docId,
-                        name: file.name,
-                        uploadDate: new Date().toISOString(),
-                    },
-                ]);
+                await loadCourseDocuments();
 
                 setChatHistory((prev) => [
                     ...prev,
                     {
                         role: 'system',
-                        content: `Document "${file.name}" ingested successfully. Ready for analysis.`,
+                        content: `Document "${file.name}" ingested successfully for course "${selectedCourse.name}". Ready for analysis.`,
                         timestamp: new Date().toISOString(),
                     },
                 ]);
@@ -86,7 +137,7 @@ function App() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [selectedCourse]);
 
     /**
      * Handle text explanation request
@@ -293,29 +344,67 @@ function App() {
     return (
         <div className="app-container">
             <ThemeToggle />
-            <StudyLayout
-                // Props for PDF viewer
-                pdfFile={pdfFile}
-                documentName={activePdf}
-                onTextHighlighted={setHighlightedText}
-                // Props for panel interactions
-                activePanel={activePanel}
-                onPanelChange={setActivePanel}
-                // Data props
-                chatHistory={chatHistory}
-                questions={questions}
-                questionAnalysis={questionAnalysis}
-                executionOutput={executionOutput}
-                executionError={executionError}
-                isLoading={isLoading}
-                // Callback props
-                onFileSelected={handleFileSelected}
-                onExplain={handleExplain}
-                onPredict={handlePredict}
-                onExecute={handleExecute}
-                onAnalyze={handleAnalyze}
-                documents={documents}
-            />
+            
+            {/* Course Selection Overlay */}
+            {showCourseSelector && (
+                <div className="course-selector-overlay">
+                    <div className="course-selector-modal">
+                        <h2>Welcome to Study Assistant</h2>
+                        <p>Select a course to get started, or create a new one.</p>
+                        <CourseSelector 
+                            onCourseSelected={handleCourseSelected}
+                            showAsModal={true}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Main Study Interface */}
+            {!showCourseSelector && (
+                <>
+                    {/* Course Header */}
+                    <div className="course-header">
+                        <div 
+                            className="course-badge" 
+                            style={{ backgroundColor: selectedCourse?.color || '#3b82f6' }}
+                        >
+                            {selectedCourse?.name}
+                        </div>
+                        <button 
+                            className="change-course-btn"
+                            onClick={() => setShowCourseSelector(true)}
+                        >
+                            Change Course
+                        </button>
+                    </div>
+
+                    <StudyLayout
+                        // Course context
+                        selectedCourse={selectedCourse}
+                        // Props for PDF viewer
+                        pdfFile={pdfFile}
+                        documentName={activePdf}
+                        onTextHighlighted={setHighlightedText}
+                        // Props for panel interactions
+                        activePanel={activePanel}
+                        onPanelChange={setActivePanel}
+                        // Data props
+                        chatHistory={chatHistory}
+                        questions={questions}
+                        questionAnalysis={questionAnalysis}
+                        executionOutput={executionOutput}
+                        executionError={executionError}
+                        isLoading={isLoading}
+                        // Callback props
+                        onFileSelected={handleFileSelected}
+                        onExplain={handleExplain}
+                        onPredict={handlePredict}
+                        onExecute={handleExecute}
+                        onAnalyze={handleAnalyze}
+                        documents={documents}
+                    />
+                </>
+            )}
         </div>
     );
 }

@@ -22,6 +22,7 @@ function RightPanel({
     onPredict,
     onExecute,
     onAnalyze,
+    selectedCourse, // Added
 }) {
     switch (activePanel) {
         case 'chat':
@@ -37,6 +38,7 @@ function RightPanel({
                 <IngestPanel
                     isLoading={isLoading}
                     onFileSelected={onFileSelected}
+                    selectedCourse={selectedCourse}
                 />
             );
         case 'predict':

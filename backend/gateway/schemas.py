@@ -42,6 +42,8 @@ class IngestResponse(BaseModel):
     blocks_extracted: int
     block_types:      dict[str, int]   # {"text": 14, "equation": 3, ...}
     status:           str              # "success" | "failed"
+    course_id:        Optional[str] = None
+    file_system_node_id: Optional[str] = None
     error:            Optional[str] = None
 
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { gateway } from '../api/gateway';
 import './CourseSelector.css';
 
-const CourseSelector = ({ onCourseSelect, selectedCourseId }) => {
+const CourseSelector = ({ onCourseSelected, onCourseSelect, selectedCourseId, showAsModal = false }) => {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showNewCourseModal, setShowNewCourseModal] = useState(false);
@@ -12,6 +12,9 @@ const CourseSelector = ({ onCourseSelect, selectedCourseId }) => {
         description: '',
         color: '#3b82f6',
     });
+
+    // Handle both prop names for backward compatibility
+    const handleCourseSelection = onCourseSelected || onCourseSelect;
 
     // Load courses
     const loadCourses = async () => {
@@ -41,8 +44,10 @@ const CourseSelector = ({ onCourseSelect, selectedCourseId }) => {
             const created = await gateway.createCourse(newCourse);
             setNewCourse({ name: '', code: '', description: '', color: '#3b82f6' });
             setShowNewCourseModal(false);
-            loadCourses(); // Refresh
-            onCourseSelect?.(created);
+            await loadCourses(); // Refresh
+            if (handleCourseSelection) {
+                handleCourseSelection(created);
+            }
         } catch (err) {
             alert(`Error creating course: ${err.message}`);
         }

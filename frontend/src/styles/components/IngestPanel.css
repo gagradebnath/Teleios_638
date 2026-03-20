@@ -71,6 +71,12 @@
     margin: 12px 0;
 }
 
+.file-size {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin: 8px 0;
+}
+
 .browse-btn {
     padding: 10px 24px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -84,12 +90,141 @@
     pointer-events: all;
 }
 
+.browse-btn.secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
 .browse-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .browse-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Ingest Section */
+.ingest-section {
+    margin: 0 16px;
+    padding: 12px;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.ingest-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* File System */
+.toggle-filesystem-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+}
+
+.toggle-filesystem-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-color);
+}
+
+.filesystem-container {
+    margin-top: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+/* Page Range Selection */
+.page-range-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+    cursor: pointer;
+}
+
+.radio-option span {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.page-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 24px;
+    margin-top: 8px;
+}
+
+.page-range-inputs input {
+    width: 80px;
+    padding: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.page-range-inputs span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+.page-list-input {
+    width: 100%;
+    padding: 8px;
+    margin-left: 24px;
+    margin-top: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+/* Ingest Button */
+.ingest-btn {
+    margin: 16px;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.ingest-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.ingest-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -136,10 +271,8 @@
 }
 
 .ingest-info li:before {
-    content: "• ";
-    color: var(--primary-color);
+    content: "✅ ";
     margin-right: 6px;
-    font-weight: bold;
 }
 
 .ingest-tips li:before {
